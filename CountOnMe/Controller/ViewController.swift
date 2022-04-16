@@ -18,7 +18,7 @@ class ViewController: UIViewController {
     
     // Error check computed variables
     var expressionIsCorrect: Bool {
-        return elements.last != "+" && elements.last != "-"
+        return elements.last != "+" && elements.last != "-" && elements.last != "×" && elements.last != "÷"
     }
     
     var expressionHaveEnoughElement: Bool {
@@ -26,7 +26,7 @@ class ViewController: UIViewController {
     }
     
     var canAddOperator: Bool {
-        return elements.last != "+" && elements.last != "-"
+        return elements.last != "+" && elements.last != "-" && elements.last != "×" && elements.last != "÷"
     }
     
     var expressionHaveResult: Bool {
@@ -57,9 +57,7 @@ class ViewController: UIViewController {
         if canAddOperator {
             textView.text.append(" + ")
         } else {
-            let alertVC = UIAlertController(title: "Zéro!", message: "Un operateur est déja mis !", preferredStyle: .alert)
-            alertVC.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
-            self.present(alertVC, animated: true, completion: nil)
+            return self.showAlert(message: "Un operateur est déja mis !")
         }
     }
     
@@ -67,23 +65,33 @@ class ViewController: UIViewController {
         if canAddOperator {
             textView.text.append(" - ")
         } else {
-            let alertVC = UIAlertController(title: "Zéro!", message: "Un operateur est déja mis !", preferredStyle: .alert)
-            alertVC.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
-            self.present(alertVC, animated: true, completion: nil)
+            return self.showAlert(message: "Un operateur est déja mis !")
         }
     }
-
+    
+    @IBAction func tappedDivisionButton(_ sender: UIButton) {
+        if canAddOperator {
+            textView.text.append(" ÷ ")
+        } else {
+            return self.showAlert(message: "Un operateur est déja mis !")
+        }
+    }
+    
+    @IBAction func tappedMultiplicationButton(_ sender: UIButton) {
+        if canAddOperator {
+            textView.text.append(" × ")
+        } else {
+            return self.showAlert(message: "Un operateur est déja mis !")
+        }
+    }
+    
     @IBAction func tappedEqualButton(_ sender: UIButton) {
         guard expressionIsCorrect else {
-            let alertVC = UIAlertController(title: "Zéro!", message: "Entrez une expression correcte !", preferredStyle: .alert)
-            alertVC.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
-            return self.present(alertVC, animated: true, completion: nil)
+            return self.showAlert(message: "Entrez une expression correcte !")
         }
         
         guard expressionHaveEnoughElement else {
-            let alertVC = UIAlertController(title: "Zéro!", message: "Démarrez un nouveau calcul !", preferredStyle: .alert)
-            alertVC.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
-            return self.present(alertVC, animated: true, completion: nil)
+            return self.showAlert(message: "Démarrez un nouveau calcul !")
         }
         
         // Create local copy of operations
@@ -99,7 +107,17 @@ class ViewController: UIViewController {
             switch operand {
             case "+": result = left + right
             case "-": result = left - right
-            default: fatalError("Unknown operator !")
+            case "÷":
+                if right == 0 {
+                    textView.text.append(" = NaN")
+                    return self.showAlert(message: "Division par zéro, non autorisée !")
+                } else {
+                    result = left / right
+                }
+            case "×": result = left * right
+            default:
+                textView.text.append(" = NaN")
+                return self.showAlert(message: "Opération non trouvée, veuillez recommencer!")
             }
             
             operationsToReduce = Array(operationsToReduce.dropFirst(3))
@@ -108,6 +126,12 @@ class ViewController: UIViewController {
         
         textView.text.append(" = \(operationsToReduce.first!)")
     }
-
+    
+    func showAlert(title: String = "Zéro!", message: String) {
+        let alertVC = UIAlertController(title: "\(title)", message: "\(message)", preferredStyle: .alert)
+        alertVC.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+        self.present(alertVC, animated: true, completion: nil)
+    }
+    
 }
 

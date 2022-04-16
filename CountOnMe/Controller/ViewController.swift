@@ -12,25 +12,27 @@ class ViewController: UIViewController {
     @IBOutlet weak var textView: UITextView!
     @IBOutlet var numberButtons: [UIButton]!
     
+    let calculator: CalculatorModel = CalculatorModel()
+    
     var elements: [String] {
         return textView.text.split(separator: " ").map { "\($0)" }
     }
     
     // Error check computed variables
     var expressionIsCorrect: Bool {
-        return elements.last != "+" && elements.last != "-" && elements.last != "×" && elements.last != "÷"
+        calculator.checkLastElementFor(elements)
     }
     
     var expressionHaveEnoughElement: Bool {
-        return elements.count >= 3
+        calculator.checkCountElementsFor(elements)
     }
     
     var canAddOperator: Bool {
-        return elements.last != "+" && elements.last != "-" && elements.last != "×" && elements.last != "÷"
+        calculator.checkLastElementFor(elements)
     }
     
     var expressionHaveResult: Bool {
-        return textView.text.firstIndex(of: "=") != nil
+        textView.text.firstIndex(of: "=") != nil
     }
     
     // View Life cycles

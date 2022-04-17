@@ -57,6 +57,8 @@ class ViewController: UIViewController {
         textView.text.append(numberText)
     }
     
+    /// Get the addition button tapped event
+    /// - Parameter sender: Addition button
     @IBAction func tappedAdditionButton(_ sender: UIButton) {
         if canAddOperator {
             textView.text.append(" + ")
@@ -65,6 +67,8 @@ class ViewController: UIViewController {
         }
     }
     
+    /// Get the substraction button tapped event
+    /// - Parameter sender: Substraction button
     @IBAction func tappedSubstractionButton(_ sender: UIButton) {
         if canAddOperator {
             textView.text.append(" - ")
@@ -73,6 +77,8 @@ class ViewController: UIViewController {
         }
     }
     
+    /// Get the division button tapped event
+    /// - Parameter sender: Division button
     @IBAction func tappedDivisionButton(_ sender: UIButton) {
         if canAddOperator {
             textView.text.append(" ÷ ")
@@ -81,6 +87,9 @@ class ViewController: UIViewController {
         }
     }
     
+    
+    /// Get the multiplication button tapped event
+    /// - Parameter sender: Multiplication button
     @IBAction func tappedMultiplicationButton(_ sender: UIButton) {
         if canAddOperator {
             textView.text.append(" × ")
@@ -89,6 +98,9 @@ class ViewController: UIViewController {
         }
     }
     
+    
+    /// Get the event of equal button tapped and ask the model for the result
+    /// - Parameter sender: the equal button cliecked
     @IBAction func tappedEqualButton(_ sender: UIButton) {
         guard expressionHaveEnoughElement else {
             return self.showAlert(message: "Démarrez un nouveau calcul !")
@@ -118,7 +130,12 @@ class ViewController: UIViewController {
         }
     }
     
-    func showAlert(title: String = "Zéro!", message: String) {
+    
+    /// Show an alert to the user
+    /// - Parameters:
+    ///   - title: title of the alert, "Zéro !" by default
+    ///   - message: The message to show to the user in the alert
+    func showAlert(title: String = "Zéro !", message: String) {
         let alertVC = UIAlertController(title: "\(title)", message: "\(message)", preferredStyle: .alert)
         alertVC.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
         self.present(alertVC, animated: true, completion: nil)

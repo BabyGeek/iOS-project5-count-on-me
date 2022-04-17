@@ -3,6 +3,7 @@
 //  SimpleCalc
 //
 //  Created by Vincent Saluzzo on 29/03/2019.
+//  Modified by Paul Oggero on 13/04/2022.
 //  Copyright © 2019 Vincent Saluzzo. All rights reserved.
 //
 
@@ -15,7 +16,7 @@ class ViewController: UIViewController {
     let calculator: CalculatorModel = CalculatorModel()
     
     var elements: [String] {
-        return textView.text.split(separator: " ").map { "\($0)" }
+        textView.text.split(separator: " ").map { "\($0)" }
     }
     
     // Error check computed variables
@@ -32,7 +33,8 @@ class ViewController: UIViewController {
     }
     
     var expressionHaveResult: Bool {
-        textView.text.firstIndex(of: "=") != nil
+        calculator.checkCalculDoneFor(textView.text)
+//        textView.text.firstIndex(of: "=") != nil
     }
     
     // View Life cycles
@@ -88,45 +90,32 @@ class ViewController: UIViewController {
     }
     
     @IBAction func tappedEqualButton(_ sender: UIButton) {
-        guard expressionIsCorrect else {
-            return self.showAlert(message: "Entrez une expression correcte !")
-        }
-        
         guard expressionHaveEnoughElement else {
             return self.showAlert(message: "Démarrez un nouveau calcul !")
         }
         
-        // Create local copy of operations
-        var operationsToReduce = elements
+        guard expressionIsCorrect else {
+            return self.showAlert(message: "Entrez une expression correcte !")
+        }
         
-        // Iterate over operations while an operand still here
-        while operationsToReduce.count > 1 {
-            let left = Int(operationsToReduce[0])!
-            let operand = operationsToReduce[1]
-            let right = Int(operationsToReduce[2])!
-            
-            let result: Int
-            switch operand {
-            case "+": result = left + right
-            case "-": result = left - right
-            case "÷":
-                if right == 0 {
-                    textView.text.append(" = NaN")
-                    return self.showAlert(message: "Division par zéro, non autorisée !")
-                } else {
-                    result = left / right
-                }
-            case "×": result = left * right
-            default:
-                textView.text.append(" = NaN")
-                return self.showAlert(message: "Opération non trouvée, veuillez recommencer!")
-            }
+        do {
+            var operationsToReduce = elements
+            let result = try calculator.doCalculationForElements(operationsToReduce)
             
             operationsToReduce = Array(operationsToReduce.dropFirst(3))
             operationsToReduce.insert("\(result)", at: 0)
+            textView.text.append(" = \(operationsToReduce.first!)")
+            
+        } catch CalculationErrors.divideByZero {
+            textView.text.append(" = NaN")
+            return self.showAlert(message: "Division par zéro, non autorisée !")
+        } catch CalculationErrors.notFound {
+            textView.text.append(" = NaN")
+            return self.showAlert(message: "Opération non trouvée, veuillez recommencer !")
+        } catch {
+            textView.text.append(" = NaN")
+            return self.showAlert(message: "Erreur inconnue rencontrée, veuillez recommencer le calcul")
         }
-        
-        textView.text.append(" = \(operationsToReduce.first!)")
     }
     
     func showAlert(title: String = "Zéro!", message: String) {

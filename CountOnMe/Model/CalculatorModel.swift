@@ -8,9 +8,10 @@
 
 import Foundation
 
-struct CalculatorModel {
-    let operators: [String] = ["+", "-", "×", "÷"]
-    
+class CalculatorModel {
+    var result: Float = 0
+    var numbers: [Int] = [Int]()
+    var operators: [Operator] = [Operator]()
     
     /// Check the elements count is enough for calcul
     /// - Parameter elements: elements array
@@ -29,7 +30,28 @@ struct CalculatorModel {
             return false
         }
         
-        return !operators.contains(element)
+        return Operator.init(rawValue: element) != nil ? true : false
+        
+    }
+    
+    func checkIfLastElementIsOperand(_ elements: [String]) -> Bool {
+        guard let element = elements.last else { return false }
+        
+        return Operator.init(rawValue: element) != nil ? true : false
+    }
+    
+    func addNumber(_ number: Int) {
+        self.numbers.append(number)
+    }
+    
+    func addOperand(_ operand: String) throws {
+        print(operand)
+        if let operand = Operator.init(rawValue: operand) {
+            print(operand)
+            self.operators.append(operand)
+        } else {
+            throw CalculationErrors.operandNotFound
+        }
     }
     
     /// check if a calcul as already been done by checking the "=" sign
@@ -42,34 +64,52 @@ struct CalculatorModel {
     /// Do the cacul
     /// - Parameter elements: the array of calcul elements
     /// - Returns: the result or throw an error of type CalculationErrors
-    func doCalculationForElements(_ elements: [String]) throws -> Int  {
+    func doCalculationForElements(_ elements: [String]) throws -> Float  {
         // Create local copy of operations
         let operationsToReduce = elements
-        var result: Int = 0
-
+        var finalResult: Float = 0
+        
         // Iterate over operations while an operand still here
         while operationsToReduce.count > 1 {
+            
+            
             let left = Int(operationsToReduce[0])!
             let operand = operationsToReduce[1]
             let right = Int(operationsToReduce[2])!
             
-            switch operand {
-            case "+": result = left + right
-            case "-": result = left - right
-            case "÷":
-                if right == 0 {
-                    throw CalculationErrors.divideByZero
-                } else {
-                    result = left / right
+            if let operand = Operator.init(rawValue: operand) {
+                do {
+                    try finalResult += doCalcul(a: left, b: right, operand: operand)
+                } catch CalculationErrors.unknown {
+                    throw CalculationErrors.unknown
+                } catch CalculationErrors.operandNotFound {
+                    throw CalculationErrors.operandNotFound
                 }
-            case "×": result = left * right
-            default:
-                throw CalculationErrors.notFound
+            } else {
+                throw CalculationErrors.unknown
             }
-            
-            return result
         }
         
-        return result
+        return finalResult
+    }
+    
+    func doCalcul(a: Int, b: Int, operand: Operator) throws -> Float {
+        let a = Float(a)
+        let b = Float(b)
+        
+        switch operand {
+        case .plus:
+            return a + b
+        case .minus:
+            return a - b
+        case .multiply:
+            return a * b
+        case .divide:
+            if b == 0 {
+                throw CalculationErrors.divideByZero
+            } else {
+                return  a / b
+            }
+        }
     }
 }

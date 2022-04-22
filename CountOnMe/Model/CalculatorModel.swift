@@ -9,7 +9,6 @@
 import Foundation
 
 class CalculatorModel {
-    var result: Float = 0
     var numbers: [Int] = [Int]()
     var operators: [Operator] = [Operator]()
     
@@ -31,7 +30,10 @@ class CalculatorModel {
         }
         
         return Operator.init(rawValue: element) != nil ? true : false
-        
+    }
+    
+    func checkExpressionIsCorrect() -> Bool {
+        return operators.isEmpty ? false : numbers.count % 2 == 1 ? false : true
     }
     
     func checkIfLastElementIsOperand(_ elements: [String]) -> Bool {
@@ -45,9 +47,7 @@ class CalculatorModel {
     }
     
     func addOperand(_ operand: String) throws {
-        print(operand)
         if let operand = Operator.init(rawValue: operand) {
-            print(operand)
             self.operators.append(operand)
         } else {
             throw CalculationErrors.operandNotFound
@@ -61,17 +61,36 @@ class CalculatorModel {
         text.firstIndex(of: "=") != nil
     }
     
+    func doCalculFor(_ elements: [String]) throws -> Float {
+        let operationsToDo = operators.count
+        
+        var total: Float = 0
+        var operationsDone = 0
+        
+        while operationsDone < operationsToDo {
+            for i in stride(from: 0, to: elements.count, by: 3) {
+                do {
+                    try total += doCalculationForElements([elements[i], operators[operationsDone].rawValue, elements[i + 2]])
+                    operationsDone += 1
+                } catch let error as CalculationErrors {
+                    throw error
+                }
+                catch {
+                    throw CalculationErrors.calculationError
+                }
+            }
+        }
+        
+        return total
+    }
+    
     /// Do the cacul
     /// - Parameter elements: the array of calcul elements
     /// - Returns: the result or throw an error of type CalculationErrors
     func doCalculationForElements(_ elements: [String]) throws -> Float  {
         // Create local copy of operations
         let operationsToReduce = elements
-        var finalResult: Float = 0
         
-        // Iterate over operations while an operand still here
-        while operationsToReduce.count > 1 {
-            
             
             let left = Int(operationsToReduce[0])!
             let operand = operationsToReduce[1]
@@ -79,7 +98,7 @@ class CalculatorModel {
             
             if let operand = Operator.init(rawValue: operand) {
                 do {
-                    try finalResult += doCalcul(a: left, b: right, operand: operand)
+                    return try doCalcul(a: left, b: right, operand: operand)
                 } catch CalculationErrors.unknown {
                     throw CalculationErrors.unknown
                 } catch CalculationErrors.operandNotFound {
@@ -88,9 +107,7 @@ class CalculatorModel {
             } else {
                 throw CalculationErrors.unknown
             }
-        }
         
-        return finalResult
     }
     
     func doCalcul(a: Int, b: Int, operand: Operator) throws -> Float {
@@ -111,5 +128,10 @@ class CalculatorModel {
                 return  a / b
             }
         }
+    }
+    
+    func reset() {
+        self.operators = [Operator]()
+        self.numbers = [Int]()
     }
 }

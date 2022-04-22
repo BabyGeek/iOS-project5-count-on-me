@@ -21,7 +21,7 @@ class ViewController: UIViewController {
     
     // Error check computed variables
     var expressionIsCorrect: Bool {
-        calculator.checkExpression(elements)
+        calculator.checkExpressionIsCorrect()
     }
     
     var expressionHaveEnoughElement: Bool {
@@ -55,7 +55,7 @@ class ViewController: UIViewController {
             textView.text = ""
         }
         
-        calculator.addNumber(Int(numberText)!)
+        //calculator.addNumber(Int(numberText)!)
         textView.text.append(numberText)
     }
     
@@ -99,8 +99,8 @@ class ViewController: UIViewController {
     @IBAction func tappedDivisionButton(_ sender: UIButton) {
         if canAddOperator {
             do {
-                try calculator.addOperand("+")
-                textView.text.append(" + ")
+                try calculator.addOperand("÷")
+                textView.text.append(" ÷ ")
             } catch CalculationErrors.operandNotFound {
                 return self.showAlert(message: "Opérateur introuvable !")
             } catch {
@@ -117,7 +117,7 @@ class ViewController: UIViewController {
     @IBAction func tappedMultiplicationButton(_ sender: UIButton) {
         if canAddOperator {
             do {
-                try calculator.addOperand("x")
+                try calculator.addOperand("×")
                 textView.text.append(" x ")
             } catch CalculationErrors.operandNotFound {
                 return self.showAlert(message: "Opérateur introuvable !")
@@ -143,7 +143,7 @@ class ViewController: UIViewController {
         
         do {
             var operationsToReduce = elements
-            let result = try calculator.doCalculationForElements(operationsToReduce)
+            let result = try calculator.doCalculFor(operationsToReduce)
             
             operationsToReduce = Array(operationsToReduce.dropFirst(3))
             operationsToReduce.insert("\(result)", at: 0)
@@ -155,7 +155,13 @@ class ViewController: UIViewController {
         } catch CalculationErrors.notFound {
             textView.text.append(" = NaN")
             return self.showAlert(message: "Opération non trouvée, veuillez recommencer !")
-        } catch {
+        } catch CalculationErrors.calculationError {
+            textView.text.append(" = NaN")
+            reset()
+            return self.showAlert(message: "Erreur inconnue rencontrée lors du calcul, veuillez recommencer le calcul")
+        }
+        
+        catch {
             textView.text.append(" = NaN")
             return self.showAlert(message: "Erreur inconnue rencontrée, veuillez recommencer le calcul")
         }
@@ -170,6 +176,11 @@ class ViewController: UIViewController {
         let alertVC = UIAlertController(title: "\(title)", message: "\(message)", preferredStyle: .alert)
         alertVC.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
         self.present(alertVC, animated: true, completion: nil)
+    }
+    
+    func reset() {
+        self.textView.text = ""
+        self.calculator.reset()
     }
     
 }

@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum Operators: String {
+enum Operator: String {
     case plus = "+"
     case minus = "-"
     case multiply = "×"

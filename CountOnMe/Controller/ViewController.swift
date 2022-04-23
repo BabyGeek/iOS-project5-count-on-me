@@ -50,12 +50,12 @@ class ViewController: UIViewController {
         guard let numberText = sender.title(for: .normal) else {
             return
         }
-        
-        if expressionHaveResult {
-            textView.text = ""
-        }
-        
-        //calculator.addNumber(Int(numberText)!)
+//        
+//        if expressionHaveResult {
+//            //textView.text = ""
+//        }
+//        
+        calculator.addNumber(Float(numberText)!)
         textView.text.append(numberText)
     }
     
@@ -155,6 +155,8 @@ class ViewController: UIViewController {
         } catch CalculationErrors.notFound {
             textView.text.append(" = NaN")
             return self.showAlert(message: "Opération non trouvée, veuillez recommencer !")
+        } catch CalculationErrors.operandFirstPosition {
+            return self.showAlert(message: "Vous ne pouvez pas placer un opérateur en première position !")
         } catch CalculationErrors.calculationError {
             textView.text.append(" = NaN")
             reset()

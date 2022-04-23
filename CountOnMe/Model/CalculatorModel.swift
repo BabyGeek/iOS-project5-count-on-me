@@ -9,7 +9,7 @@
 import Foundation
 
 class CalculatorModel {
-    var numbers: [Int] = [Int]()
+    var numbers: [Float] = [Float]()
     var operators: [Operator] = [Operator]()
     
     /// Check the elements count is enough for calcul
@@ -33,7 +33,7 @@ class CalculatorModel {
     }
     
     func checkExpressionIsCorrect() -> Bool {
-        return operators.isEmpty ? false : numbers.count % 2 == 1 ? false : true
+        return operators.isEmpty ? false : numbers.count > operators.count
     }
     
     func checkIfLastElementIsOperand(_ elements: [String]) -> Bool {
@@ -42,7 +42,7 @@ class CalculatorModel {
         return Operator.init(rawValue: element) != nil ? true : false
     }
     
-    func addNumber(_ number: Int) {
+    func addNumber(_ number: Float) {
         self.numbers.append(number)
     }
     
@@ -62,24 +62,72 @@ class CalculatorModel {
     }
     
     func doCalculFor(_ elements: [String]) throws -> Float {
-        let operationsToDo = operators.count
         
-        var total: Float = 0
-        var operationsDone = 0
+        var operationNumbers = numbers
+        var operationOperands = operators
         
-        while operationsDone < operationsToDo {
-            for i in stride(from: 0, to: elements.count, by: 3) {
-                do {
-                    try total += doCalculationForElements([elements[i], operators[operationsDone].rawValue, elements[i + 2]])
-                    operationsDone += 1
-                } catch let error as CalculationErrors {
-                    throw error
-                }
-                catch {
-                    throw CalculationErrors.calculationError
-                }
+        let firstElements = numbers.prefix(2)
+        var total: Float = try doCalculationForElements(left: firstElements[0], operand: operators.first!, right: firstElements[1])
+        operationNumbers.remove(at: 0)
+        operationNumbers.remove(at: 0)
+        
+        operationOperands.remove(at: 0)
+        
+        
+        while !operationOperands.isEmpty && !operationNumbers.isEmpty {
+            for index in operationOperands.indices {
+                total = try doCalculationForElements(left: total, operand: operationOperands[index], right: operationNumbers.first!)
+                operationNumbers.remove(at: 0)
+                operationOperands.remove(at: 0)
             }
         }
+        
+        
+        //        let elements = elements.map{
+        //            ($0 as NSString).floatValue
+        //        }
+        //
+        //        dump(elements)
+        //        dump(elements)
+        //
+        //        var total: Float = elements.first!
+        //
+        //        for index in elements.indices {
+        //            if let operand = Operator.init(rawValue: String(elements[index])) {
+        //                total += try doCalculationForElements([String(format: "%.2f", total), operand.rawValue, String(format: "%.2f", elements[index + 1])])
+        //            }
+        //        }
+        //
+        //        dump(total)
+        //
+        //        if operators.count > 1 {
+        //            print("chain")
+        //
+        //            let calculs = getChainCalculs(elements)
+        //        } else {
+        //            print("single")
+        //
+        //            let calculs = elements.chunked(into: 3)
+        //        }
+        //
+        //        let calculs = elements.filter { $0 != "=" }.chunked(into: 3)
+        //        print(calculs)
+        
+        //        var operationsDone = 0
+        //
+        //        while operationsDone < operationsToDo {
+        //            for i in stride(from: 0, to: elements.count, by: 3) {
+        //                do {
+        //                    try total += doCalculationForElements([elements[i], operators[operationsDone].rawValue, elements[i + 2]])
+        //                    operationsDone += 1
+        //                } catch let error as CalculationErrors {
+        //                    throw error
+        //                }
+        //                catch {
+        //                    throw CalculationErrors.calculationError
+        //                }
+        //            }
+        //        }
         
         return total
     }
@@ -87,33 +135,21 @@ class CalculatorModel {
     /// Do the cacul
     /// - Parameter elements: the array of calcul elements
     /// - Returns: the result or throw an error of type CalculationErrors
-    func doCalculationForElements(_ elements: [String]) throws -> Float  {
-        // Create local copy of operations
-        let operationsToReduce = elements
-        
-            
-            let left = Int(operationsToReduce[0])!
-            let operand = operationsToReduce[1]
-            let right = Int(operationsToReduce[2])!
-            
-            if let operand = Operator.init(rawValue: operand) {
-                do {
-                    return try doCalcul(a: left, b: right, operand: operand)
-                } catch CalculationErrors.unknown {
-                    throw CalculationErrors.unknown
-                } catch CalculationErrors.operandNotFound {
-                    throw CalculationErrors.operandNotFound
-                }
-            } else {
-                throw CalculationErrors.unknown
-            }
-        
+    func doCalculationForElements(left: Float, operand: Operator, right: Float) throws -> Float  {
+        do {
+            return try doCalcul(a: left, b: right, operand: operand)
+        } catch CalculationErrors.unknown {
+            throw CalculationErrors.unknown
+        } catch CalculationErrors.operandNotFound {
+            throw CalculationErrors.operandNotFound
+        } catch {
+            throw CalculationErrors.unknown
+        }
     }
     
-    func doCalcul(a: Int, b: Int, operand: Operator) throws -> Float {
-        let a = Float(a)
-        let b = Float(b)
+    func doCalcul(a: Float, b: Float, operand: Operator) throws -> Float {
         
+        print(a + b)
         switch operand {
         case .plus:
             return a + b
@@ -130,8 +166,12 @@ class CalculatorModel {
         }
     }
     
+    func getChainCalculs(_ elements: [String]) -> [[String]] {
+        return [[String]]()
+    }
+    
     func reset() {
-        self.operators = [Operator]()
-        self.numbers = [Int]()
+        numbers = [Float]()
+        operators = [Operator]()
     }
 }

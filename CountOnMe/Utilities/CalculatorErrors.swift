@@ -9,5 +9,5 @@
 
 /// Calculation error types enumerator
 enum CalculationErrors: Error {
-    case divideByZero, notFound, unknown, operandNotFound, calculationError
+    case divideByZero, notFound, unknown, operandNotFound, calculationError, operandFirstPosition
 }

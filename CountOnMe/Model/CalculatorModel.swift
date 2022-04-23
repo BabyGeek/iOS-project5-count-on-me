@@ -159,16 +159,22 @@ class CalculatorModel {
             }
         }
         
-        var elementsPriorized = elementsRefactored
-        
-        for index in elementsRefactored.indices {
-            if let operand = Operator.init(rawValue: elementsRefactored[index]) {
+        return try getPrioritarizedElements(elementsRefactored)
+    }
+    
+    func getPrioritarizedElements(_ elements: [String]) throws -> [String] {
+        print(elements)
+        var prioritarizedElements: [String] = elements
+        for index in elements.indices {
+            if let operand = Operator.init(rawValue: elements[index]) {
                 if operand.isPrioritary && index > 2 {
                     do {
-                        let priorityCalcul = try doCalcul(a: Float(elementsRefactored[index - 1])!, b: Float(elementsRefactored[index + 1])!, operand: operand)
-
-                        elementsPriorized[index - 1] = String(priorityCalcul)
-                        elementsPriorized.removeSubrange(index...index + 1)
+                        let priorityCalcul = try doCalcul(a: Float(elements[index - 1])!, b: Float(elements[index + 1])!, operand: operand)
+                        prioritarizedElements[index - 1] = String(priorityCalcul)
+                        prioritarizedElements.remove(at: index)
+                        prioritarizedElements.remove(at: index)
+                        
+                        return try getPrioritarizedElements(prioritarizedElements)
                     } catch let error as CalculationErrors {
                         throw error
                     }
@@ -176,7 +182,7 @@ class CalculatorModel {
             }
         }
         
-        return elementsPriorized
+        return prioritarizedElements
     }
     
     /// Reset the numbers and operands of the calculator

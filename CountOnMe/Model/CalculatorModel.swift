@@ -149,12 +149,17 @@ class CalculatorModel {
         
         if checkCalculDoneFor(elementsRefactored.joined(separator: " ")) {
             for index in elementsRefactored.indices {
+                dump(elementsRefactored)
+                print(index)
+                print("---------\n")
                 if elementsRefactored[index] == "=" {
                     elementsRefactored.removeSubrange(0...index)
                     
                     if checkCalculDoneFor(elementsRefactored.joined(separator: " ")) {
                         return try cleanElements(elementsRefactored)
                     }
+                    
+                    break
                 }
             }
         }
@@ -163,7 +168,6 @@ class CalculatorModel {
     }
     
     func getPrioritarizedElements(_ elements: [String]) throws -> [String] {
-        print(elements)
         var prioritarizedElements: [String] = elements
         for index in elements.indices {
             if let operand = Operator.init(rawValue: elements[index]) {

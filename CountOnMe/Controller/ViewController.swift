@@ -10,7 +10,13 @@
 import UIKit
 
 class ViewController: UIViewController {
-    @IBOutlet weak var textView: UITextView!
+    @IBOutlet weak var textView: UITextView! {
+        didSet {
+            let range = NSMakeRange(textView.text.count - 1, 0)
+            textView.scrollRangeToVisible(range)
+        }
+    }
+    @IBOutlet weak var shortenButton: UIButton!
     @IBOutlet var numberButtons: [UIButton]!
     
     let calculator: CalculatorModel = CalculatorModel()
@@ -42,6 +48,12 @@ class ViewController: UIViewController {
         
         // Do any additional setup after loading the view.
         textView.text = ""
+        if #available(iOS 13.0, *) {
+            shortenButton.setImage(UIImage(systemName: "text.badge.minus"), for: .normal)
+            
+        } else {
+            // Fallback on earlier versions
+        }
     }
     
     
@@ -50,11 +62,7 @@ class ViewController: UIViewController {
         guard let numberText = sender.title(for: .normal) else {
             return
         }
-//        
-//        if expressionHaveResult {
-//            //textView.text = ""
-//        }
-//        
+        
         calculator.addNumber(Float(numberText)!)
         textView.text.append(numberText)
     }

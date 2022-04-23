@@ -11,6 +11,7 @@ import Foundation
 class CalculatorModel {
     var numbers: [Float] = [Float]()
     var operands: [Operator] = [Operator]()
+    var shortenCalculString: String = ""
     
     /// Check the elements count is enough for calcul
     /// - Parameter elements: elements array
@@ -85,10 +86,14 @@ class CalculatorModel {
         return resultValue
     }
     
+    func getShortenText() -> String {
+        return shortenCalculString
+    }
+    
     /// Do the cacul
     /// - Parameter elements: the array of calcul elements
     /// - Returns: the result or throw an error of type CalculationErrors
-    func doCalculationForElements(left: Float, operand: Operator, right: Float) throws -> Float  {
+    private func doCalculationForElements(left: Float, operand: Operator, right: Float) throws -> Float  {
         do {
             return try doCalcul(a: left, b: right, operand: operand)
         } catch CalculationErrors.unknown {
@@ -100,7 +105,7 @@ class CalculatorModel {
         }
     }
     
-    func  doCalcul(a: Float, b: Float, operand: Operator) throws -> Float {
+    private func doCalcul(a: Float, b: Float, operand: Operator) throws -> Float {
         
         switch operand {
         case .plus:
@@ -120,7 +125,7 @@ class CalculatorModel {
     
     /// Cleanup and rebuild the numbers and operators for the calcul
     /// - Parameter elements: array of elements in the text field
-    func rebuildNumbersAndOperands(_ elements: [String]) throws {
+    private func rebuildNumbersAndOperands(_ elements: [String]) throws {
         reset()
         let elementsRefactored = try cleanElements(elements)
         
@@ -144,14 +149,11 @@ class CalculatorModel {
     /// Clean elements, will return the last calcul after = sign if chaining calculs, other will return the first calcul it founds
     /// - Parameter elements: the array of elements in the text
     /// - Returns: array of elements to keep in reality for the calcul
-    func cleanElements(_ elements: [String]) throws -> [String] {
+    private func cleanElements(_ elements: [String]) throws -> [String] {
         var elementsRefactored: [String] = elements
         
         if checkCalculDoneFor(elementsRefactored.joined(separator: " ")) {
             for index in elementsRefactored.indices {
-                dump(elementsRefactored)
-                print(index)
-                print("---------\n")
                 if elementsRefactored[index] == "=" {
                     elementsRefactored.removeSubrange(0...index)
                     
@@ -167,7 +169,7 @@ class CalculatorModel {
         return try getPrioritarizedElements(elementsRefactored)
     }
     
-    func getPrioritarizedElements(_ elements: [String]) throws -> [String] {
+    private func getPrioritarizedElements(_ elements: [String]) throws -> [String] {
         var prioritarizedElements: [String] = elements
         for index in elements.indices {
             if let operand = Operator.init(rawValue: elements[index]) {
@@ -185,6 +187,8 @@ class CalculatorModel {
                 }
             }
         }
+        
+        shortenCalculString = prioritarizedElements.joined(separator: " ")
         
         return prioritarizedElements
     }

@@ -73,9 +73,6 @@ class CalculatorModel {
         var resultValue: Float = numbers.first!
         numbers.remove(at: 0)
         
-        print("\nNumbers : \(numbers)")
-        
-        
         while !numbers.isEmpty && !operands.isEmpty {
             for _ in operands {
                 resultValue = try doCalculationForElements(left: resultValue, operand: operands[0], right: numbers[0])
@@ -86,14 +83,6 @@ class CalculatorModel {
         try rebuildNumbersAndOperands(elements)
         
         return resultValue
-    }
-    
-    func getOperationNumbers(_ elements: [String]) -> [Float] {
-        return numbers
-    }
-    
-    func getOperationOperands(_ elements: [String]) -> [Operator]{
-        return operands
     }
     
     /// Do the cacul
@@ -127,21 +116,6 @@ class CalculatorModel {
                 return  a / b
             }
         }
-    }
-    
-    func getChainCalculs(_ elements: [String]) -> [[String]] {
-        return [[String]]()
-    }
-    
-    func getInitCalcul(_ elements: [String]?) throws -> Float {
-        //        var elements = cleanElements(elements)
-        
-        var total: Float = numbers.first!
-        numbers.remove(at: 0)
-        
-        
-        
-        return total
     }
     
     /// Cleanup and rebuild the numbers and operators for the calcul

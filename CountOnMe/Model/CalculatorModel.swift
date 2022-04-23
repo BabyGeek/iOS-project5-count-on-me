@@ -10,7 +10,7 @@ import Foundation
 
 class CalculatorModel {
     var numbers: [Float] = [Float]()
-    var operators: [Operator] = [Operator]()
+    var operands: [Operator] = [Operator]()
     
     /// Check the elements count is enough for calcul
     /// - Parameter elements: elements array
@@ -33,7 +33,7 @@ class CalculatorModel {
     }
     
     func checkExpressionIsCorrect() -> Bool {
-        return operators.isEmpty ? false : numbers.count > operators.count
+        return operands.isEmpty ? false : numbers.count > operands.count
     }
     
     func checkIfLastElementIsOperand(_ elements: [String]) -> Bool {
@@ -48,7 +48,7 @@ class CalculatorModel {
     
     func addOperand(_ operand: String) throws {
         if let operand = Operator.init(rawValue: operand) {
-            self.operators.append(operand)
+            self.operands.append(operand)
         } else {
             throw CalculationErrors.operandNotFound
         }
@@ -62,74 +62,43 @@ class CalculatorModel {
     }
     
     func doCalculFor(_ elements: [String]) throws -> Float {
+        try rebuildNumbersAndOperands(elements)
+
+        var total: Float = try getInitCalcul(elements)
         
-        var operationNumbers = numbers
-        var operationOperands = operators
+        print("Total : \(total)")
         
-        let firstElements = numbers.prefix(2)
-        var total: Float = try doCalculationForElements(left: firstElements[0], operand: operators.first!, right: firstElements[1])
-        operationNumbers.remove(at: 0)
-        operationNumbers.remove(at: 0)
+        print("\nNumbers : \(numbers)")
+
+        let finalCalcul: [String:Any] = [
+            "right": numbers.first!,
+            "operand": operands.first!
+        ]
         
-        operationOperands.remove(at: 0)
+        numbers.remove(at: 0)
         
         
-        while !operationOperands.isEmpty && !operationNumbers.isEmpty {
-            for index in operationOperands.indices {
-                total = try doCalculationForElements(left: total, operand: operationOperands[index], right: operationNumbers.first!)
-                operationNumbers.remove(at: 0)
-                operationOperands.remove(at: 0)
+        while !numbers.isEmpty && !operands.isEmpty {
+            for _ in operands {
+                total = try doCalculationForElements(left: total, operand: operands[0], right: numbers[0])
+                numbers.remove(at: 0)
+                operands.remove(at: 0)
             }
         }
         
+        total = try doCalculationForElements(left: total, operand: finalCalcul["operand"] as! Operator, right: finalCalcul["right"] as! Float)
         
-        //        let elements = elements.map{
-        //            ($0 as NSString).floatValue
-        //        }
-        //
-        //        dump(elements)
-        //        dump(elements)
-        //
-        //        var total: Float = elements.first!
-        //
-        //        for index in elements.indices {
-        //            if let operand = Operator.init(rawValue: String(elements[index])) {
-        //                total += try doCalculationForElements([String(format: "%.2f", total), operand.rawValue, String(format: "%.2f", elements[index + 1])])
-        //            }
-        //        }
-        //
-        //        dump(total)
-        //
-        //        if operators.count > 1 {
-        //            print("chain")
-        //
-        //            let calculs = getChainCalculs(elements)
-        //        } else {
-        //            print("single")
-        //
-        //            let calculs = elements.chunked(into: 3)
-        //        }
-        //
-        //        let calculs = elements.filter { $0 != "=" }.chunked(into: 3)
-        //        print(calculs)
-        
-        //        var operationsDone = 0
-        //
-        //        while operationsDone < operationsToDo {
-        //            for i in stride(from: 0, to: elements.count, by: 3) {
-        //                do {
-        //                    try total += doCalculationForElements([elements[i], operators[operationsDone].rawValue, elements[i + 2]])
-        //                    operationsDone += 1
-        //                } catch let error as CalculationErrors {
-        //                    throw error
-        //                }
-        //                catch {
-        //                    throw CalculationErrors.calculationError
-        //                }
-        //            }
-        //        }
-        
+        try rebuildNumbersAndOperands(elements)
+
         return total
+    }
+    
+    func getOperationNumbers(_ elements: [String]) -> [Float] {
+        return numbers
+    }
+    
+    func getOperationOperands(_ elements: [String]) -> [Operator]{
+        return operands
     }
     
     /// Do the cacul
@@ -147,9 +116,8 @@ class CalculatorModel {
         }
     }
     
-    func doCalcul(a: Float, b: Float, operand: Operator) throws -> Float {
+    func  doCalcul(a: Float, b: Float, operand: Operator) throws -> Float {
         
-        print(a + b)
         switch operand {
         case .plus:
             return a + b
@@ -170,8 +138,82 @@ class CalculatorModel {
         return [[String]]()
     }
     
+    func getInitCalcul(_ elements: [String]) throws -> Float {
+        var elements = cleanElements(elements)
+
+        var total: Float = 0
+        
+        if checkCalculDoneFor(elements.joined(separator: " ")) {
+            for index in elements.indices {
+                
+                if elements[index] == "=" {
+                    total = Float(elements[index + 1])!
+                    elements = cleanElements(elements)
+                    
+                    
+                    if checkCalculDoneFor(elements.joined(separator: " ")) {
+                        return try getInitCalcul(elements)
+                    }
+                    
+                    break
+                }
+            }
+            
+        } else {
+            total = 0
+        }
+        
+        
+        
+        
+        return total
+    }
+    
+    func rebuildNumbersAndOperands(_ elements: [String]) throws {
+        reset()
+        let elementsRefactored = cleanElements(elements)
+
+        for element in elementsRefactored {
+            if let operand = Operator.init(rawValue: element) {
+                do {
+                    try addOperand(operand.rawValue)
+                } catch CalculationErrors.operandNotFound {
+                    throw CalculationErrors.operandNotFound
+                } catch {
+                    throw CalculationErrors.calculationError
+                }
+            } else {
+                if let number = Float(element) {
+                    addNumber(number)
+                }
+            }
+        }
+    }
+    
+    func cleanElements(_ elements: [String]) -> [String] {
+        var elementsRefactored: [String] = elements
+        
+        if checkCalculDoneFor(elementsRefactored.joined(separator: " ")) {
+            for index in elementsRefactored.indices {
+                if elementsRefactored[index] == "=" {
+                    elementsRefactored.removeSubrange(0...index)
+                    
+                    if checkCalculDoneFor(elementsRefactored.joined(separator: " ")) {
+                        return cleanElements(elementsRefactored)
+                    }
+                    
+                    
+                    return elementsRefactored
+                }
+            }
+        
+        }
+        
+        return elementsRefactored
+    }
+    
     func reset() {
         numbers = [Float]()
-        operators = [Operator]()
+        operands = [Operator]()
     }
 }

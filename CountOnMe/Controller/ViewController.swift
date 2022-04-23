@@ -25,11 +25,11 @@ class ViewController: UIViewController {
     }
     
     var expressionHaveEnoughElement: Bool {
-        calculator.checkCountElementsFor(elements)
+        try! calculator.checkCountElementsFor(elements)
     }
     
     var canAddOperator: Bool {
-        !calculator.checkIfLastElementIsOperand(elements)
+        try! !calculator.checkIfLastElementIsOperand(elements)
     }
     
     var expressionHaveResult: Bool {
@@ -118,7 +118,7 @@ class ViewController: UIViewController {
         if canAddOperator {
             do {
                 try calculator.addOperand("×")
-                textView.text.append(" x ")
+                textView.text.append(" × ")
             } catch CalculationErrors.operandNotFound {
                 return self.showAlert(message: "Opérateur introuvable !")
             } catch {

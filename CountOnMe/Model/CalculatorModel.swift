@@ -15,14 +15,18 @@ class CalculatorModel {
     /// Check the elements count is enough for calcul
     /// - Parameter elements: elements array
     /// - Returns: Boolean, true if count of elements is greater than or equal to 3
-    func checkCountElementsFor(_ elements: [String]) -> Bool {
+    func checkCountElementsFor(_ elements: [String]) throws -> Bool {
+        try rebuildNumbersAndOperands(elements)
+
         return elements.count >= 3
     }
     
     /// check if the last element of the elements is an operator or an "=" sign
     /// - Parameter elements: the elements array
     /// - Returns: Boolean depending on last element character
-    func checkLastElementFor(_ elements: [String]) -> Bool {
+    func checkLastElementFor(_ elements: [String]) throws -> Bool {
+        try rebuildNumbersAndOperands(elements)
+
         guard let element = elements.last else { return false }
         
         if elements.contains("=") {
@@ -36,7 +40,9 @@ class CalculatorModel {
         return operands.isEmpty ? false : numbers.count > operands.count
     }
     
-    func checkIfLastElementIsOperand(_ elements: [String]) -> Bool {
+    func checkIfLastElementIsOperand(_ elements: [String]) throws -> Bool {
+        try rebuildNumbersAndOperands(elements)
+
         guard let element = elements.last else { return false }
         
         return Operator.init(rawValue: element) != nil ? true : false

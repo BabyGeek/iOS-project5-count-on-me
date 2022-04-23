@@ -37,10 +37,15 @@ class CalculatorModel {
         return Operator.init(rawValue: element) != nil ? true : false
     }
     
+    /// Check if the current elements create a correct expression
+    /// - Returns: true or false
     func checkExpressionIsCorrect() -> Bool {
         return operands.isEmpty ? false : numbers.count > operands.count
     }
     
+    /// Check if the last element of the array is an operand
+    /// - Parameter elements: the elements of the calcul to check
+    /// - Returns: return true or false
     func checkIfLastElementIsOperand(_ elements: [String]) throws -> Bool {
         try rebuildNumbersAndOperands(elements)
         
@@ -49,6 +54,9 @@ class CalculatorModel {
         return Operator.init(rawValue: element) != nil ? true : false
     }
     
+    /// Check if we can add an operand
+    /// - Parameter elements: the elements of the calcul to check
+    /// - Returns: true if we can, can throw error operandFirstPosition
     func checkIfCanAddOperator(_ elements: [String]) throws -> Bool {
         do {
             return try !checkIfLastElementIsOperand(elements) && !(elements.isEmpty)
@@ -57,10 +65,14 @@ class CalculatorModel {
         }
     }
     
+    /// Add a number to the numbers
+    /// - Parameter number: number to add
     func addNumber(_ number: Float) {
         self.numbers.append(number)
     }
     
+    /// Add an operator to the operands
+    /// - Parameter operand: operand to add
     func addOperand(_ operand: Operator) {
         operands.append(operand)
     }
@@ -72,6 +84,9 @@ class CalculatorModel {
         text.firstIndex(of: "=") != nil
     }
     
+    /// Execute the full calcul for an array of elements, it check the calculator build, and execute calcul loop
+    /// - Parameter elements: array of String of the elements in the calcul
+    /// - Returns: The final result of the calcul
     func doCalculFor(_ elements: [String]) throws -> Float {
         try rebuildNumbersAndOperands(elements)
         
@@ -91,6 +106,8 @@ class CalculatorModel {
         return resultValue
     }
     
+    /// Shorten the text, get the priority calculs done and get more space to see the calcul
+    /// - Returns: The text of the calcul shortened
     func getShortenText() -> String {
         return shortenCalculString
     }
@@ -110,6 +127,12 @@ class CalculatorModel {
         }
     }
     
+    /// Do a calcul on a and b depending on the operand
+    /// - Parameters:
+    ///   - a: number a of the calcul
+    ///   - b: number b of the calcul
+    ///   - operand: operand to use
+    /// - Returns: The result of the calcul or throw an error if divided by zero
     private func doCalcul(a: Float, b: Float, operand: Operator) throws -> Float {
         
         switch operand {
@@ -168,6 +191,9 @@ class CalculatorModel {
         return try getPrioritarizedElements(elementsRefactored)
     }
     
+    /// Get elements iwith calculs priorities done
+    /// - Parameter elements: elements of the calcul array of strings
+    /// - Returns: Array of elements with priorities done
     private func getPrioritarizedElements(_ elements: [String]) throws -> [String] {
         var prioritarizedElements: [String] = elements
         for index in elements.indices {

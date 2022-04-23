@@ -13,4 +13,13 @@ enum Operator: String {
     case minus = "-"
     case multiply = "×"
     case divide = "÷"
+    
+    var isPrioritary: Bool {
+        switch self {
+        case .multiply, .divide:
+            return true
+        default:
+            return false
+        }
+    }
 }

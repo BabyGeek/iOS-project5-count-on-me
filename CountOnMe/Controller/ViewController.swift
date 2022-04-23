@@ -129,6 +129,9 @@ class ViewController: UIViewController {
         }
     }
     
+    @IBAction func tappedResetButton(_ sender: UIButton) {
+        self.reset()
+    }
     
     /// Get the event of equal button tapped and ask the model for the result
     /// - Parameter sender: the equal button cliecked

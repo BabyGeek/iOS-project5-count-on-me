@@ -17,7 +17,7 @@ class CalculatorModel {
     /// - Returns: Boolean, true if count of elements is greater than or equal to 3
     func checkCountElementsFor(_ elements: [String]) throws -> Bool {
         try rebuildNumbersAndOperands(elements)
-
+        
         return elements.count >= 3
     }
     
@@ -26,7 +26,7 @@ class CalculatorModel {
     /// - Returns: Boolean depending on last element character
     func checkLastElementFor(_ elements: [String]) throws -> Bool {
         try rebuildNumbersAndOperands(elements)
-
+        
         guard let element = elements.last else { return false }
         
         if elements.contains("=") {
@@ -42,7 +42,7 @@ class CalculatorModel {
     
     func checkIfLastElementIsOperand(_ elements: [String]) throws -> Bool {
         try rebuildNumbersAndOperands(elements)
-
+        
         guard let element = elements.last else { return false }
         
         return Operator.init(rawValue: element) != nil ? true : false
@@ -69,34 +69,23 @@ class CalculatorModel {
     
     func doCalculFor(_ elements: [String]) throws -> Float {
         try rebuildNumbersAndOperands(elements)
-
-        var total: Float = try getInitCalcul(elements)
         
-        print("Total : \(total)")
+        var resultValue: Float = numbers.first!
+        numbers.remove(at: 0)
         
         print("\nNumbers : \(numbers)")
-
-        let finalCalcul: [String:Any] = [
-            "right": numbers.first!,
-            "operand": operands.first!
-        ]
-        
-        numbers.remove(at: 0)
         
         
         while !numbers.isEmpty && !operands.isEmpty {
             for _ in operands {
-                total = try doCalculationForElements(left: total, operand: operands[0], right: numbers[0])
+                resultValue = try doCalculationForElements(left: resultValue, operand: operands[0], right: numbers[0])
                 numbers.remove(at: 0)
                 operands.remove(at: 0)
             }
         }
-        
-        total = try doCalculationForElements(left: total, operand: finalCalcul["operand"] as! Operator, right: finalCalcul["right"] as! Float)
-        
         try rebuildNumbersAndOperands(elements)
-
-        return total
+        
+        return resultValue
     }
     
     func getOperationNumbers(_ elements: [String]) -> [Float] {
@@ -144,41 +133,23 @@ class CalculatorModel {
         return [[String]]()
     }
     
-    func getInitCalcul(_ elements: [String]) throws -> Float {
-        var elements = cleanElements(elements)
-
-        var total: Float = 0
+    func getInitCalcul(_ elements: [String]?) throws -> Float {
+        //        var elements = cleanElements(elements)
         
-        if checkCalculDoneFor(elements.joined(separator: " ")) {
-            for index in elements.indices {
-                
-                if elements[index] == "=" {
-                    total = Float(elements[index + 1])!
-                    elements = cleanElements(elements)
-                    
-                    
-                    if checkCalculDoneFor(elements.joined(separator: " ")) {
-                        return try getInitCalcul(elements)
-                    }
-                    
-                    break
-                }
-            }
-            
-        } else {
-            total = 0
-        }
-        
+        var total: Float = numbers.first!
+        numbers.remove(at: 0)
         
         
         
         return total
     }
     
+    /// Cleanup and rebuild the numbers and operators for the calcul
+    /// - Parameter elements: array of elements in the text field
     func rebuildNumbersAndOperands(_ elements: [String]) throws {
         reset()
-        let elementsRefactored = cleanElements(elements)
-
+        let elementsRefactored = try cleanElements(elements)
+        
         for element in elementsRefactored {
             if let operand = Operator.init(rawValue: element) {
                 do {
@@ -196,7 +167,10 @@ class CalculatorModel {
         }
     }
     
-    func cleanElements(_ elements: [String]) -> [String] {
+    /// Clean elements, will return the last calcul after = sign if chaining calculs, other will return the first calcul it founds
+    /// - Parameter elements: the array of elements in the text
+    /// - Returns: array of elements to keep in reality for the calcul
+    func cleanElements(_ elements: [String]) throws -> [String] {
         var elementsRefactored: [String] = elements
         
         if checkCalculDoneFor(elementsRefactored.joined(separator: " ")) {
@@ -205,19 +179,33 @@ class CalculatorModel {
                     elementsRefactored.removeSubrange(0...index)
                     
                     if checkCalculDoneFor(elementsRefactored.joined(separator: " ")) {
-                        return cleanElements(elementsRefactored)
+                        return try cleanElements(elementsRefactored)
                     }
-                    
-                    
-                    return elementsRefactored
                 }
             }
-        
         }
         
-        return elementsRefactored
+        var elementsPriorized = elementsRefactored
+        
+        for index in elementsRefactored.indices {
+            if let operand = Operator.init(rawValue: elementsRefactored[index]) {
+                if operand.isPrioritary && index > 2 {
+                    do {
+                        let priorityCalcul = try doCalcul(a: Float(elementsRefactored[index - 1])!, b: Float(elementsRefactored[index + 1])!, operand: operand)
+
+                        elementsPriorized[index - 1] = String(priorityCalcul)
+                        elementsPriorized.removeSubrange(index...index + 1)
+                    } catch let error as CalculationErrors {
+                        throw error
+                    }
+                }
+            }
+        }
+        
+        return elementsPriorized
     }
     
+    /// Reset the numbers and operands of the calculator
     func reset() {
         numbers = [Float]()
         operands = [Operator]()

@@ -69,6 +69,7 @@ class ViewController: UIViewController {
     
     @IBAction func tappedShortenButton(_ sender: UIButton) {
         textView.text = calculator.getShortenText()
+        updateShortenButtonDisplay()
     }
     
     /// Get the addition button tapped event
@@ -122,6 +123,7 @@ class ViewController: UIViewController {
     
     @IBAction func tappedResetButton(_ sender: UIButton) {
         self.reset()
+        self.updateShortenButtonDisplay()
     }
     
     /// Get the event of equal button tapped and ask the model for the result
@@ -165,7 +167,7 @@ class ViewController: UIViewController {
     }
     
     func updateShortenButtonDisplay() {
-        if expressionHaveResult {
+        if expressionHaveResult && textView.text != calculator.getShortenText() {
             
             shortenButton.backgroundColor = UIColor.systemBlue
             shortenButton.tintColor = .white

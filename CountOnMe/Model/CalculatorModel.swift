@@ -49,16 +49,20 @@ class CalculatorModel {
         return Operator.init(rawValue: element) != nil ? true : false
     }
     
+    func checkIfCanAddOperator(_ elements: [String]) throws -> Bool {
+        do {
+            return try !checkIfLastElementIsOperand(elements) && !(elements.isEmpty)
+        } catch {
+            throw CalculationErrors.operandFirstPosition
+        }
+    }
+    
     func addNumber(_ number: Float) {
         self.numbers.append(number)
     }
     
-    func addOperand(_ operand: String) throws {
-        if let operand = Operator.init(rawValue: operand) {
-            self.operands.append(operand)
-        } else {
-            throw CalculationErrors.operandNotFound
-        }
+    func addOperand(_ operand: Operator) {
+        operands.append(operand)
     }
     
     /// check if a calcul as already been done by checking the "=" sign
@@ -83,6 +87,7 @@ class CalculatorModel {
         }
         try rebuildNumbersAndOperands(elements)
         
+        shortenCalculString = shortenCalculString + " = \(resultValue)"
         return resultValue
     }
     
@@ -131,13 +136,7 @@ class CalculatorModel {
         
         for element in elementsRefactored {
             if let operand = Operator.init(rawValue: element) {
-                do {
-                    try addOperand(operand.rawValue)
-                } catch CalculationErrors.operandNotFound {
-                    throw CalculationErrors.operandNotFound
-                } catch {
-                    throw CalculationErrors.calculationError
-                }
+                addOperand(operand)
             } else {
                 if let number = Float(element) {
                     addNumber(number)

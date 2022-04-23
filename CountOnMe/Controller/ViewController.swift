@@ -35,7 +35,11 @@ class ViewController: UIViewController {
     }
     
     var canAddOperator: Bool {
-        try! !calculator.checkIfLastElementIsOperand(elements)
+            do {
+                return try         calculator.checkIfCanAddOperator(elements)
+            } catch {
+                return false
+            }
     }
     
     var expressionHaveResult: Bool {
@@ -48,12 +52,8 @@ class ViewController: UIViewController {
         
         // Do any additional setup after loading the view.
         textView.text = ""
-        if #available(iOS 13.0, *) {
-            shortenButton.setImage(UIImage(systemName: "text.badge.minus"), for: .normal)
-            
-        } else {
-            // Fallback on earlier versions
-        }
+        updateShortenButtonDisplay()
+
     }
     
     
@@ -67,55 +67,43 @@ class ViewController: UIViewController {
         textView.text.append(numberText)
     }
     
+    @IBAction func tappedShortenButton(_ sender: UIButton) {
+        textView.text = calculator.getShortenText()
+    }
+    
     /// Get the addition button tapped event
     /// - Parameter sender: Addition button
     @IBAction func tappedAdditionButton(_ sender: UIButton) {
-        if canAddOperator {
-            do {
-                try calculator.addOperand("+")
-                textView.text.append(" + ")
-            } catch CalculationErrors.operandNotFound {
-                return self.showAlert(message: "Opérateur introuvable !")
-            } catch {
-                return self.showAlert(message: "Erreur inconnue.")
-            }
-            
-        } else {
-            return self.showAlert(message: "Un operateur est déja mis !")
+        do {
+            try tappedButton(.plus)
+        } catch CalculationErrors.operandNotFound {
+            return self.showAlert(message: "Opérateur introuvable !")
+        } catch {
+            return self.showAlert(message: "Erreur inconnue.")
         }
     }
     
     /// Get the substraction button tapped event
     /// - Parameter sender: Substraction button
     @IBAction func tappedSubstractionButton(_ sender: UIButton) {
-        if canAddOperator {
-            do {
-                try calculator.addOperand("-")
-                textView.text.append(" - ")
-            } catch CalculationErrors.operandNotFound {
-                return self.showAlert(message: "Opérateur introuvable !")
-            } catch {
-                return self.showAlert(message: "Erreur inconnue.")
-            }
-        } else {
-            return self.showAlert(message: "Un operateur est déja mis !")
+        do {
+            try tappedButton(.minus)
+        } catch CalculationErrors.operandNotFound {
+            return self.showAlert(message: "Opérateur introuvable !")
+        } catch {
+            return self.showAlert(message: "Erreur inconnue.")
         }
     }
     
     /// Get the division button tapped event
     /// - Parameter sender: Division button
     @IBAction func tappedDivisionButton(_ sender: UIButton) {
-        if canAddOperator {
-            do {
-                try calculator.addOperand("÷")
-                textView.text.append(" ÷ ")
-            } catch CalculationErrors.operandNotFound {
-                return self.showAlert(message: "Opérateur introuvable !")
-            } catch {
-                return self.showAlert(message: "Erreur inconnue.")
-            }
-        } else {
-            return self.showAlert(message: "Un operateur est déja mis !")
+        do {
+            try tappedButton(.divide)
+        } catch CalculationErrors.operandNotFound {
+            return self.showAlert(message: "Opérateur introuvable !")
+        } catch {
+            return self.showAlert(message: "Erreur inconnue.")
         }
     }
     
@@ -123,17 +111,12 @@ class ViewController: UIViewController {
     /// Get the multiplication button tapped event
     /// - Parameter sender: Multiplication button
     @IBAction func tappedMultiplicationButton(_ sender: UIButton) {
-        if canAddOperator {
-            do {
-                try calculator.addOperand("×")
-                textView.text.append(" × ")
-            } catch CalculationErrors.operandNotFound {
-                return self.showAlert(message: "Opérateur introuvable !")
-            } catch {
-                return self.showAlert(message: "Erreur inconnue.")
-            }
-        } else {
-            return self.showAlert(message: "Un operateur est déja mis !")
+        do {
+            try tappedButton(.multiply)
+        } catch CalculationErrors.operandNotFound {
+            return self.showAlert(message: "Opérateur introuvable !")
+        } catch {
+            return self.showAlert(message: "Erreur inconnue.")
         }
     }
     
@@ -159,6 +142,7 @@ class ViewController: UIViewController {
             operationsToReduce = Array(operationsToReduce.dropFirst(3))
             operationsToReduce.insert("\(result)", at: 0)
             textView.text.append(" = \(operationsToReduce.first!)")
+            updateShortenButtonDisplay()
             
         } catch CalculationErrors.divideByZero {
             textView.text.append(" = NaN")
@@ -180,6 +164,28 @@ class ViewController: UIViewController {
         }
     }
     
+    func updateShortenButtonDisplay() {
+        if expressionHaveResult {
+            
+            shortenButton.backgroundColor = UIColor.systemBlue
+            shortenButton.tintColor = .white
+            
+            if #available(iOS 13.0, *) {
+                shortenButton.setImage(UIImage(systemName: "text.badge.minus"), for: .normal)
+            } else {
+                // Fallback on earlier versions
+            }
+        } else {
+            
+            shortenButton.backgroundColor = UIColor(named: "Default")
+            
+            if #available(iOS 13.0, *) {
+                shortenButton.setImage(UIImage(systemName: ""), for: .normal)
+            } else {
+                // Fallback on earlier versions
+            }
+        }
+    }
     
     /// Show an alert to the user
     /// - Parameters:
@@ -196,5 +202,20 @@ class ViewController: UIViewController {
         self.calculator.reset()
     }
     
+}
+
+extension ViewController {
+    func tappedButton(_ operand: Operator) throws {
+        if canAddOperator {
+            calculator.addOperand(operand)
+            textView.text.append(" \(operand.rawValue) ")
+        } else {
+            if calculator.operands.isEmpty {
+                return self.showAlert(message: "Un opérateur de ce type ne peux pas être placé au début du calcul")
+            }
+            
+            return self.showAlert(message: "Un operateur est déja mis !")
+        }
+    }
 }
 

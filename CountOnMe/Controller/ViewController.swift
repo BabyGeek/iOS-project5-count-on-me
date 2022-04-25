@@ -31,15 +31,11 @@ class ViewController: UIViewController {
     }
     
     var expressionHaveEnoughElement: Bool {
-        try! calculator.checkCountElementsFor(elements)
+        calculator.checkCountElements()
     }
     
     var canAddOperator: Bool {
-            do {
-                return try         calculator.checkIfCanAddOperator(elements)
-            } catch {
-                return false
-            }
+        calculator.checkIfCanAddOperator()
     }
     
     var expressionHaveResult: Bool {
@@ -139,7 +135,7 @@ class ViewController: UIViewController {
         
         do {
             var operationsToReduce = elements
-            let result = try calculator.doCalculFor(operationsToReduce)
+            let result = try calculator.doCalcul()
             
             operationsToReduce = Array(operationsToReduce.dropFirst(3))
             operationsToReduce.insert("\(result)", at: 0)

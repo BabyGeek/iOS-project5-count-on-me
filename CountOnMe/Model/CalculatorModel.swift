@@ -16,8 +16,8 @@ class CalculatorModel {
     /// Check the elements count is enough for calcul
     /// - Parameter elements: elements array
     /// - Returns: Boolean, true if count of elements is greater than or equal to 3
-    func checkCountElementsFor(_ elements: [String]) throws -> Bool {
-        try rebuildNumbersAndOperands(elements)
+    func checkCountElements() -> Bool {
+        let elements = getElements()
         
         return elements.count >= 3
     }
@@ -25,8 +25,8 @@ class CalculatorModel {
     /// check if the last element of the elements is an operator or an "=" sign
     /// - Parameter elements: the elements array
     /// - Returns: Boolean depending on last element character
-    func checkLastElementFor(_ elements: [String]) throws -> Bool {
-        try rebuildNumbersAndOperands(elements)
+    func checkLastElement() -> Bool {
+        let elements = getElements()
         
         guard let element = elements.last else { return false }
         
@@ -46,8 +46,8 @@ class CalculatorModel {
     /// Check if the last element of the array is an operand
     /// - Parameter elements: the elements of the calcul to check
     /// - Returns: return true or false
-    func checkIfLastElementIsOperand(_ elements: [String]) throws -> Bool {
-        try rebuildNumbersAndOperands(elements)
+    func checkIfLastElementIsOperand() -> Bool {
+        let elements = getElements()
         
         guard let element = elements.last else { return false }
         
@@ -57,12 +57,9 @@ class CalculatorModel {
     /// Check if we can add an operand
     /// - Parameter elements: the elements of the calcul to check
     /// - Returns: true if we can, can throw error operandFirstPosition
-    func checkIfCanAddOperator(_ elements: [String]) throws -> Bool {
-        do {
-            return try !checkIfLastElementIsOperand(elements) && !(elements.isEmpty)
-        } catch {
-            throw CalculationErrors.operandFirstPosition
-        }
+    func checkIfCanAddOperator() -> Bool {
+        let elements = getElements()
+        return !checkIfLastElementIsOperand() && !(elements.isEmpty)
     }
     
     /// Add a number to the numbers
@@ -85,10 +82,9 @@ class CalculatorModel {
     }
     
     /// Execute the full calcul for an array of elements, it check the calculator build, and execute calcul loop
-    /// - Parameter elements: array of String of the elements in the calcul
     /// - Returns: The final result of the calcul
-    func doCalculFor(_ elements: [String]) throws -> Float {
-        try rebuildNumbersAndOperands(elements)
+    func doCalcul() throws -> Float {
+        try rebuildNumbersAndOperands()
         
         var resultValue: Float = numbers.first!
         numbers.remove(at: 0)
@@ -100,7 +96,6 @@ class CalculatorModel {
                 operands.remove(at: 0)
             }
         }
-        try rebuildNumbersAndOperands(elements)
         
         shortenCalculString = shortenCalculString + " = \(resultValue)"
         return resultValue
@@ -113,7 +108,9 @@ class CalculatorModel {
     }
     
     /// Do the cacul
-    /// - Parameter elements: the array of calcul elements
+    /// - Parameter left: left number
+    /// - Parameter operand: operand of the inner calcul
+    /// - Parameter right: right number
     /// - Returns: the result or throw an error of type CalculationErrors
     private func doCalculationForElements(left: Float, operand: Operator, right: Float) throws -> Float  {
         do {
@@ -153,9 +150,8 @@ class CalculatorModel {
     
     /// Cleanup and rebuild the numbers and operators for the calcul
     /// - Parameter elements: array of elements in the text field
-    private func rebuildNumbersAndOperands(_ elements: [String]) throws {
-        reset()
-        let elementsRefactored = try cleanElements(elements)
+    private func rebuildNumbersAndOperands() throws {
+        let elementsRefactored = try cleanElements(getElements())
         
         for element in elementsRefactored {
             if let operand = Operator.init(rawValue: element) {
@@ -216,6 +212,27 @@ class CalculatorModel {
         shortenCalculString = prioritarizedElements.joined(separator: " ")
         
         return prioritarizedElements
+    }
+    
+    /// Get the elements array for the calcul
+    /// - Returns: Array of string elements
+    private func getElements() -> [String] {
+        var elements = [String]()
+        var operandsTemp = operands
+        
+        for index in numbers.indices {
+            if index > 0 {
+                if operandsTemp.count > 0 {
+                    elements.append(operandsTemp.first!.rawValue)
+                    operandsTemp.remove(at: 0)
+                }
+            }
+            
+            elements.append(String(numbers[index]))
+
+        }
+        
+        return elements
     }
     
     /// Reset the numbers and operands of the calculator

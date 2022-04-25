@@ -26,13 +26,7 @@ class CalculatorModel {
     /// - Parameter elements: the elements array
     /// - Returns: Boolean depending on last element character
     func checkLastElement() -> Bool {
-        let elements = getElements()
-        
-        guard let element = elements.last else { return false }
-        
-        if elements.contains("=") {
-            return false
-        }
+        guard let element = getElements().last else { return false }
         
         return Operator.init(rawValue: element) != nil ? true : false
     }
@@ -47,9 +41,7 @@ class CalculatorModel {
     /// - Parameter elements: the elements of the calcul to check
     /// - Returns: return true or false
     func checkIfLastElementIsOperand() -> Bool {
-        let elements = getElements()
-        
-        guard let element = elements.last else { return false }
+        guard let element = getElements().last else { return false }
         
         return Operator.init(rawValue: element) != nil ? true : false
     }
@@ -58,8 +50,7 @@ class CalculatorModel {
     /// - Parameter elements: the elements of the calcul to check
     /// - Returns: true if we can, can throw error operandFirstPosition
     func checkIfCanAddOperator() -> Bool {
-        let elements = getElements()
-        return !checkIfLastElementIsOperand() && !(elements.isEmpty)
+        !checkIfLastElementIsOperand() && !(getElements().isEmpty)
     }
     
     /// Add a number to the numbers
@@ -85,7 +76,7 @@ class CalculatorModel {
     /// - Returns: The final result of the calcul
     func doCalcul() throws -> Float {
         try rebuildNumbersAndOperands()
-        
+
         var resultValue: Float = numbers.first!
         numbers.remove(at: 0)
         
@@ -96,6 +87,8 @@ class CalculatorModel {
                 operands.remove(at: 0)
             }
         }
+        
+        numbers.append(resultValue)
         
         shortenCalculString = shortenCalculString + " = \(resultValue)"
         return resultValue
@@ -115,12 +108,8 @@ class CalculatorModel {
     private func doCalculationForElements(left: Float, operand: Operator, right: Float) throws -> Float  {
         do {
             return try doCalcul(a: left, b: right, operand: operand)
-        } catch CalculationErrors.unknown {
-            throw CalculationErrors.unknown
-        } catch CalculationErrors.operandNotFound {
-            throw CalculationErrors.operandNotFound
-        } catch {
-            throw CalculationErrors.unknown
+        } catch CalculationErrors.divideByZero {
+            throw CalculationErrors.divideByZero
         }
     }
     
@@ -131,7 +120,6 @@ class CalculatorModel {
     ///   - operand: operand to use
     /// - Returns: The result of the calcul or throw an error if divided by zero
     private func doCalcul(a: Float, b: Float, operand: Operator) throws -> Float {
-        
         switch operand {
         case .plus:
             return a + b
@@ -152,6 +140,7 @@ class CalculatorModel {
     /// - Parameter elements: array of elements in the text field
     private func rebuildNumbersAndOperands() throws {
         let elementsRefactored = try cleanElements(getElements())
+        reset()
         
         for element in elementsRefactored {
             if let operand = Operator.init(rawValue: element) {
@@ -192,6 +181,7 @@ class CalculatorModel {
     /// - Returns: Array of elements with priorities done
     private func getPrioritarizedElements(_ elements: [String]) throws -> [String] {
         var prioritarizedElements: [String] = elements
+        
         for index in elements.indices {
             if let operand = Operator.init(rawValue: elements[index]) {
                 if operand.isPrioritary && index > 2 {
@@ -202,8 +192,8 @@ class CalculatorModel {
                         prioritarizedElements.remove(at: index)
                         
                         return try getPrioritarizedElements(prioritarizedElements)
-                    } catch let error as CalculationErrors {
-                        throw error
+                    } catch CalculationErrors.divideByZero {
+                        throw CalculationErrors.divideByZero
                     }
                 }
             }
@@ -230,6 +220,10 @@ class CalculatorModel {
             
             elements.append(String(numbers[index]))
 
+        }
+        
+        if operandsTemp.count == 1 {
+            elements.append(operandsTemp.first!.rawValue)
         }
         
         return elements

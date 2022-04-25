@@ -106,11 +106,7 @@ class CalculatorModel {
     /// - Parameter right: right number
     /// - Returns: the result or throw an error of type CalculationErrors
     private func doCalculationForElements(left: Float, operand: Operator, right: Float) throws -> Float  {
-        do {
-            return try doCalcul(a: left, b: right, operand: operand)
-        } catch CalculationErrors.divideByZero {
-            throw CalculationErrors.divideByZero
-        }
+        return try doCalcul(a: left, b: right, operand: operand)
     }
     
     /// Do a calcul on a and b depending on the operand
@@ -185,16 +181,12 @@ class CalculatorModel {
         for index in elements.indices {
             if let operand = Operator.init(rawValue: elements[index]) {
                 if operand.isPrioritary && index > 2 {
-                    do {
-                        let priorityCalcul = try doCalcul(a: Float(elements[index - 1])!, b: Float(elements[index + 1])!, operand: operand)
-                        prioritarizedElements[index - 1] = String(priorityCalcul)
-                        prioritarizedElements.remove(at: index)
-                        prioritarizedElements.remove(at: index)
-                        
-                        return try getPrioritarizedElements(prioritarizedElements)
-                    } catch CalculationErrors.divideByZero {
-                        throw CalculationErrors.divideByZero
-                    }
+                    let priorityCalcul = try doCalcul(a: Float(elements[index - 1])!, b: Float(elements[index + 1])!, operand: operand)
+                    prioritarizedElements[index - 1] = String(priorityCalcul)
+                    prioritarizedElements.remove(at: index)
+                    prioritarizedElements.remove(at: index)
+                    
+                    return try getPrioritarizedElements(prioritarizedElements)
                 }
             }
         }

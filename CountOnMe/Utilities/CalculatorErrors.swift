@@ -6,8 +6,7 @@
 //  Copyright © 2022 Vincent Saluzzo. All rights reserved.
 //
 
-
 /// Calculation error types enumerator
 enum CalculationErrors: Error {
-    case divideByZero, notFound, unknown, operandNotFound
+    case divideByZero, notFound, unknown, operandNotFound, calculationError, operandFirstPosition, badOperand
 }

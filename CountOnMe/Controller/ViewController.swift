@@ -210,18 +210,24 @@ extension ViewController {
 // MARK: - Update display
 
 extension ViewController {
-
     func updateShortenButtonDisplay() {
         if expressionHaveResult && textView.text != calculator.getShortenText() {
             shortenButton.backgroundColor = UIColor.systemBlue
             shortenButton.tintColor = .white
+
+            if #available(iOS 13.0, *) {
+                shortenButton.setImage(UIImage(systemName: "text.badge.minus"), for: .normal)
+            } else {
+                shortenButton.setTitle("Short", for: .normal)
+            }
         } else {
             shortenButton.backgroundColor = UIColor(named: "Default")
-            shortenButton.tintColor = UIColor(named: "Default")
-        }
-    }
+            if #available(iOS 13.0, *) {
+                shortenButton.setImage(UIImage(systemName: ""), for: .normal)
+            } else {
+                shortenButton.setTitle("", for: .normal)
+            }
 
-    func updateTextView() {
-        textView.text = calculator.getShortenText()
+        }
     }
 }

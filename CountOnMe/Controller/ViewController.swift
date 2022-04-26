@@ -10,11 +10,7 @@
 import UIKit
 
 class ViewController: UIViewController {
-    @IBOutlet weak var textView: UITextView! {
-        didSet {
-            textView.text = calculator.getShortenText()
-        }
-    }
+    @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var shortenButton: UIButton!
     @IBOutlet var numberButtons: [UIButton]!
 
@@ -179,12 +175,12 @@ extension ViewController {
         }
 
         do {
-            var operationsToReduce = elements
-            let result = try calculator.doCalcul()
+            try calculator.doCalcul(elements)
 
-            operationsToReduce = Array(operationsToReduce.dropFirst(3))
-            operationsToReduce.insert("\(result)", at: 0)
-            textView.text.append(" = \(operationsToReduce.first!)")
+            if let result = calculator.result {
+                textView.text.append(" = \(result)")
+            }
+
             updateShortenButtonDisplay()
 
         } catch CalculationErrors.divideByZero {
@@ -193,6 +189,11 @@ extension ViewController {
         } catch CalculationErrors.notFound {
             textView.text.append(" = NaN")
             return self.showAlert(message: "Opération non trouvée, veuillez recommencer !")
+        } catch CalculationErrors.badOperand {
+            textView.text.append(" = NaN")
+            reset()
+            return self
+                .showAlert(message: "Le dernier opérateur trouvé est un =, continuer ou recommencer votre calcul")
         } catch CalculationErrors.operandFirstPosition {
             return self.showAlert(message: "Vous ne pouvez pas placer un opérateur en première position !")
         } catch CalculationErrors.calculationError {
@@ -212,24 +213,15 @@ extension ViewController {
 
     func updateShortenButtonDisplay() {
         if expressionHaveResult && textView.text != calculator.getShortenText() {
-
             shortenButton.backgroundColor = UIColor.systemBlue
             shortenButton.tintColor = .white
-
-            if #available(iOS 13.0, *) {
-                shortenButton.setImage(UIImage(systemName: "text.badge.minus"), for: .normal)
-            } else {
-                // Fallback on earlier versions
-            }
         } else {
-
             shortenButton.backgroundColor = UIColor(named: "Default")
-
-            if #available(iOS 13.0, *) {
-                shortenButton.setImage(UIImage(systemName: ""), for: .normal)
-            } else {
-                // Fallback on earlier versions
-            }
+            shortenButton.tintColor = UIColor(named: "Default")
         }
+    }
+
+    func updateTextView() {
+        textView.text = calculator.getShortenText()
     }
 }

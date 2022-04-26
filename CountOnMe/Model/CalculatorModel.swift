@@ -12,6 +12,7 @@ class CalculatorModel {
     var numbers: [Float] = [Float]()
     var operands: [Operator] = [Operator]()
     var shortenCalculString: String = ""
+    var result: Float?
 
     /// Check the elements count is enough for calcul
     /// - Parameter elements: elements array
@@ -74,7 +75,7 @@ class CalculatorModel {
 
     /// Execute the full calcul for an array of elements, it check the calculator build, and execute calcul loop
     /// - Returns: The final result of the calcul
-    func doCalcul() throws -> Float {
+    func doCalcul() throws {
         try rebuildNumbersAndOperands()
 
         var resultValue: Float = numbers.first!
@@ -82,22 +83,31 @@ class CalculatorModel {
 
         while !numbers.isEmpty && !operands.isEmpty {
             for _ in operands {
-                resultValue = try doCalculationForElements(left: resultValue, operand: operands[0], right: numbers[0])
+                resultValue = try doCalculationForElements(
+                    left: resultValue,
+                    operand: operands[0],
+                    right: numbers[0]
+                )
                 numbers.remove(at: 0)
                 operands.remove(at: 0)
             }
         }
 
+        result = resultValue
         numbers.append(resultValue)
+    }
 
-        shortenCalculString += " = \(resultValue)"
-        return resultValue
+    func doCalcul(_ elements: [String]) throws {
+        try setElements(elements)
+        try doCalcul()
     }
 
     /// Shorten the text, get the priority calculs done and get more space to see the calcul
     /// - Returns: The text of the calcul shortened
     func getShortenText() -> String {
-        return shortenCalculString
+        guard let result = result else { return "" }
+
+        return shortenCalculString + "= \(result)"
     }
 
     /// Do the cacul
@@ -146,6 +156,7 @@ class CalculatorModel {
                     addNumber(number)
                 }
             }
+            shortenCalculString.append("\(element) ")
         }
     }
 
@@ -182,14 +193,17 @@ class CalculatorModel {
         for index in elements.indices {
             if let operand = Operator.init(rawValue: elements[index]) {
                 if operand.isPrioritary && index > 2 {
-                    let priorityCalcul = try doCalcul(
-                        right: Float(elements[index - 1])!,
-                        left: Float(elements[index + 1])!,
-                        operand: operand
-                    )
-                    prioritarizedElements[index - 1] = String(priorityCalcul)
-                    prioritarizedElements.remove(at: index)
-                    prioritarizedElements.remove(at: index)
+                    if let right = Float(elements[index - 1]), let left = Float(elements[index + 1]) {
+                        let priorityCalcul = try doCalcul(
+                            right: right,
+                            left: left,
+                            operand: operand
+                        )
+
+                        prioritarizedElements[index - 1] = String(priorityCalcul)
+                        prioritarizedElements.remove(at: index)
+                        prioritarizedElements.remove(at: index)
+                    }
 
                     return try getPrioritarizedElements(prioritarizedElements)
                 }
@@ -226,9 +240,24 @@ class CalculatorModel {
         return elements
     }
 
+    private func setElements(_ elements: [String]) throws {
+        reset()
+        let elements = try cleanElements(elements)
+
+        for element in elements {
+            if let operand = Operator.init(rawValue: element) {
+                self.addOperand(operand)
+            } else if let number = Float(element) {
+                self.addNumber(number)
+            }
+        }
+    }
+
     /// Reset the numbers and operands of the calculator
     func reset() {
         numbers = [Float]()
         operands = [Operator]()
+        shortenCalculString = ""
+        result = nil
     }
 }

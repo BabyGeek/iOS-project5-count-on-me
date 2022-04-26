@@ -32,6 +32,7 @@ class CalculatorTestCase: XCTestCase {
     // Chain calculs 5 + 3 = 8 + 3 * 3 = 17
     // 5 + 3 * 2 = 11 => check shortenText output = 5.0 + 6.0 = 11.0
     // Try 5 + 3 * 6 + 8 / 2 = 27 + 9 = 36 * 2 = 72 - 30 = 42 => check recusivity inside private funcs
+    // Try 5 + 3 * 6 + 8 / 2 = 27 + 9 = 36 * 2 = 72 - 30 = 42  in text elements => check result is 42
 
     func testGivenCalculatorIsNew_WhenGettingOperandsAndNumbersAndShortenText_ThenAllShouldBeEmpty() {
         // When, Then
@@ -49,47 +50,88 @@ class CalculatorTestCase: XCTestCase {
         XCTAssertTrue(!calculator.checkExpressionIsCorrect())
     }
 
-    func testGivenCalculatorIsNew_WhenDoFivePlusTree_ThenOutputShouldBeHeightAndFloat() {
+    func testGivenCalculatorIsNew_WhenDoFivePlusTree_ThenResultShouldBeHeight() {
         // When
         calculator.addNumber(5)
         calculator.addOperand(.plus)
         calculator.addNumber(3)
 
+        do {
+            try calculator.doCalcul()
+        } catch {
+            XCTAssertTrue(false)
+        }
+
         // Then
-        XCTAssertEqual(try calculator.doCalcul() as Float, 8)
+        if let result = calculator.result {
+            XCTAssertEqual(result, 8)
+        } else {
+            XCTAssertTrue(false)
+        }
     }
 
-    func testGivenCalculatorIsNew_WhenDoFiveMinusTree_ThenOutputShouldBeTwoAndFloat() {
+    func testGivenCalculatorIsNew_WhenDoFiveMinusTree_ThenResultShouldBeTwo() {
         // When
         calculator.addNumber(5)
         calculator.addOperand(.minus)
         calculator.addNumber(3)
 
+        do {
+            try calculator.doCalcul()
+        } catch {
+            XCTAssertTrue(false)
+        }
+
         // Then
-        XCTAssertEqual(try calculator.doCalcul() as Float, 2)
+        if let result = calculator.result {
+            XCTAssertEqual(result, 2)
+        } else {
+            XCTAssertTrue(false)
+        }
     }
 
-    func testGivenCalculatorIsNew_WhenDoFiveMultiplyTree_ThenOutputShouldBeFifteenAndFloat() {
+    func testGivenCalculatorIsNew_WhenDoFiveMultiplyTree_ThenResultShouldBeFifteen() {
         // When
         calculator.addNumber(5)
         calculator.addOperand(.multiply)
         calculator.addNumber(3)
 
+        do {
+            try calculator.doCalcul()
+        } catch {
+            XCTAssertTrue(false)
+        }
+
         // Then
-        XCTAssertEqual(try calculator.doCalcul() as Float, 15)
+        if let result = calculator.result {
+            XCTAssertEqual(result, 15)
+        } else {
+            XCTAssertTrue(false)
+        }
     }
 
-    func testGivenCalculatorIsNew_WhenDoSixDevidedByTwo_ThenOutputShouldBeTreeAndFloat() {
+    func testGivenCalculatorIsNew_WhenDoSixDevidedByTwo_ThenResultShouldBeTree() {
         // When
         calculator.addNumber(6)
         calculator.addOperand(.divide)
         calculator.addNumber(2)
 
+
+        do {
+            try calculator.doCalcul()
+        } catch {
+            XCTAssertTrue(false)
+        }
+
         // Then
-        XCTAssertEqual(try calculator.doCalcul() as Float, 3)
+        if let result = calculator.result {
+            XCTAssertEqual(result, 3)
+        } else {
+            XCTAssertTrue(false)
+        }
     }
 
-    func testGivenCalculatorIsFivePlusTree_WhenDoCalculAndDevidedByTwo_ThenOutputShouldBeFourAndFloat() {
+    func testGivenCalculatorIsFivePlusTree_WhenDoCalculAndDevidedByTwo_ThenResultShouldBeFour() {
         // Given
         calculator.addNumber(5)
         calculator.addOperand(.plus)
@@ -97,15 +139,26 @@ class CalculatorTestCase: XCTestCase {
 
         // When
         do {
-            _ = try calculator.doCalcul()
+            try calculator.doCalcul()
         } catch {
             XCTAssertTrue(false)
         }
         calculator.addOperand(.divide)
         calculator.addNumber(2)
 
+        
+        do {
+            try calculator.doCalcul()
+        } catch {
+            XCTAssertTrue(false)
+        }
+        
         // Then
-        XCTAssertEqual(try calculator.doCalcul() as Float, 4)
+        if let result = calculator.result {
+            XCTAssertEqual(result, 4)
+        } else {
+            XCTAssertTrue(false)
+        }
     }
 
     func testGivenCalculatorIsFivePlusTree_WhenGettingCorrectCheck_ThenCorrectCheckShouldBeTrue() {
@@ -144,7 +197,7 @@ class CalculatorTestCase: XCTestCase {
 
         // Then
         do {
-            try _ = calculator.doCalcul()
+            try calculator.doCalcul()
         } catch let error as CalculationErrors {
             XCTAssertEqual(error, CalculationErrors.divideByZero)
         } catch {
@@ -152,7 +205,7 @@ class CalculatorTestCase: XCTestCase {
         }
     }
 
-    func testGivenCalculatorIsFivePlusTree_WhenPlusTreeAndMultiplyByTree_ThenOutputShouldBeSeventeenAndFloat() {
+    func testGivenCalculatorIsFivePlusTree_WhenPlusTreeAndMultiplyByTree_ThenResultShouldBeSeventeen() {
         // Given
         calculator.addNumber(5)
         calculator.addOperand(.plus)
@@ -164,11 +217,21 @@ class CalculatorTestCase: XCTestCase {
         calculator.addOperand(.multiply)
         calculator.addNumber(3)
 
+        do {
+            try calculator.doCalcul()
+        } catch {
+            XCTAssertTrue(false)
+        }
+
         // Then
-        XCTAssertEqual(try calculator.doCalcul() as Float, 17)
+        if let result = calculator.result {
+            XCTAssertEqual(result, 17)
+        } else {
+            XCTAssertTrue(false)
+        }
     }
 
-    func testGivenCalculatorIsFivePlusTree_WhenDoCalculAndPlusTreeAndMultiplyByTree_ThenOutputShouldBeHeightAndFloat() {
+    func testGivenCalculatorIsFivePlusTree_WhenDoCalculAndPlusTreeAndMultiplyByTree_ThenResultShouldBeHeight() {
         // Given
         calculator.addNumber(5)
         calculator.addOperand(.plus)
@@ -176,7 +239,7 @@ class CalculatorTestCase: XCTestCase {
 
         // When
         do {
-            _ = try calculator.doCalcul()
+            try calculator.doCalcul()
         } catch {
             XCTAssertTrue(false)
         }
@@ -186,8 +249,30 @@ class CalculatorTestCase: XCTestCase {
         calculator.addOperand(.multiply)
         calculator.addNumber(3)
 
+        do {
+            try calculator.doCalcul()
+        } catch {
+            XCTAssertTrue(false)
+        }
+
         // Then
-        XCTAssertEqual(try calculator.doCalcul() as Float, 17)
+        if let result = calculator.result {
+            XCTAssertEqual(result, 17)
+        } else {
+            XCTAssertTrue(false)
+        }
+    }
+
+    func testGivenCalculatorIsMany_WhenCheckShorten_ThenShortenTextShouldBeEmpty() {
+        // Given
+        calculator.addNumber(5)
+        calculator.addOperand(.plus)
+        calculator.addNumber(3)
+        calculator.addOperand(.multiply)
+        calculator.addNumber(2)
+
+        // When, Then
+        XCTAssertEqual(calculator.getShortenText(), "")
     }
 
     func testGivenCalculatorIsMany_WhenDoCalcul_ThenShortenTextShouldBeShorten() {
@@ -200,7 +285,7 @@ class CalculatorTestCase: XCTestCase {
 
         // When
         do {
-            _ = try calculator.doCalcul()
+            try calculator.doCalcul()
         } catch {
             XCTAssertTrue(false)
         }
@@ -209,7 +294,7 @@ class CalculatorTestCase: XCTestCase {
         XCTAssertEqual(calculator.getShortenText(), "5.0 + 6.0 = 11.0")
     }
 
-    func testGivenCalculatorIsMany_WhenDoCalculPlusMany_ThenOutputShouldBeThirtyAndFloat() {
+    func testGivenCalculatorIsMany_WhenDoCalculPlusMany_ThenResultShouldBeFourtyTwo() {
         // Given
         calculator.addNumber(5)
         calculator.addOperand(.plus)
@@ -223,7 +308,7 @@ class CalculatorTestCase: XCTestCase {
 
         // When
         do {
-            _ = try calculator.doCalcul()
+            try calculator.doCalcul()
         } catch {
             XCTAssertTrue(false)
         }
@@ -232,7 +317,7 @@ class CalculatorTestCase: XCTestCase {
         calculator.addNumber(9)
 
         do {
-            _ = try calculator.doCalcul()
+            try calculator.doCalcul()
         } catch {
             XCTAssertTrue(false)
         }
@@ -241,7 +326,7 @@ class CalculatorTestCase: XCTestCase {
         calculator.addNumber(2)
 
         do {
-            _ = try calculator.doCalcul()
+            try calculator.doCalcul()
         } catch {
             XCTAssertTrue(false)
         }
@@ -249,7 +334,37 @@ class CalculatorTestCase: XCTestCase {
         calculator.addOperand(.minus)
         calculator.addNumber(30)
 
+        do {
+            try calculator.doCalcul()
+        } catch {
+            XCTAssertTrue(false)
+        }
+
         // Then
-        XCTAssertEqual(try calculator.doCalcul() as Float, 42)
+        if let result = calculator.result {
+            XCTAssertEqual(result, 42)
+        } else {
+            XCTAssertTrue(false)
+        }
+    }
+
+    func testGivenCalculatorIsText_WhenDoCalculWithElement_ThenResultShouldBeFourtyTwo() {
+        // Given
+        let text = "5 + 3 * 6 + 8 / 2 = 27 + 9 = 36 * 2 = 72 - 30"
+
+        // When
+        let elements = text.split(separator: " ").map { "\($0)" }
+        do {
+            try calculator.doCalcul(elements)
+        } catch {
+            XCTAssertTrue(false)
+        }
+
+        // Then
+        if let result = calculator.result {
+            XCTAssertEqual(result, 42)
+        } else {
+            XCTAssertTrue(false)
+        }
     }
 }

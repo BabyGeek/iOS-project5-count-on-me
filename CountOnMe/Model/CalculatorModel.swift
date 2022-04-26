@@ -8,6 +8,7 @@
 
 import Foundation
 
+// MARK: - Base model and base checks
 class CalculatorModel {
     var numbers: [Float] = [Float]()
     var operands: [Operator] = [Operator]()
@@ -54,6 +55,16 @@ class CalculatorModel {
         !checkIfLastElementIsOperand() && !(getElements().isEmpty)
     }
 
+    /// check if a calcul as already been done by checking the "=" sign
+    /// - Parameter text: the text currently displayed in the view
+    /// - Returns: boolean depending if a calcul as been done or not
+    func checkCalculDoneFor(_ text: String) -> Bool {
+        text.firstIndex(of: "=") != nil
+    }
+}
+
+// MARK: - Add number and operand to the calcul
+extension CalculatorModel {
     /// Add a number to the numbers
     /// - Parameter number: number to add
     func addNumber(_ number: Float) {
@@ -66,100 +77,10 @@ class CalculatorModel {
         operands.append(operand)
     }
 
-    /// check if a calcul as already been done by checking the "=" sign
-    /// - Parameter text: the text currently displayed in the view
-    /// - Returns: boolean depending if a calcul as been done or not
-    func checkCalculDoneFor(_ text: String) -> Bool {
-        text.firstIndex(of: "=") != nil
-    }
+}
 
-    /// Execute the full calcul for an array of elements, it check the calculator build, and execute calcul loop
-    /// - Returns: The final result of the calcul
-    func doCalcul() throws {
-        try rebuildNumbersAndOperands()
-
-        var resultValue: Float = numbers.first!
-        numbers.remove(at: 0)
-
-        while !numbers.isEmpty && !operands.isEmpty {
-            for _ in operands {
-                resultValue = try doCalculationForElements(
-                    left: resultValue,
-                    operand: operands[0],
-                    right: numbers[0]
-                )
-                numbers.remove(at: 0)
-                operands.remove(at: 0)
-            }
-        }
-
-        result = resultValue
-        numbers.append(resultValue)
-    }
-
-    func doCalcul(_ elements: [String]) throws {
-        try setElements(elements)
-        try doCalcul()
-    }
-
-    /// Shorten the text, get the priority calculs done and get more space to see the calcul
-    /// - Returns: The text of the calcul shortened
-    func getShortenText() -> String {
-        guard let result = result else { return "" }
-
-        return shortenCalculString + "= \(result)"
-    }
-
-    /// Do the cacul
-    /// - Parameter left: left number
-    /// - Parameter operand: operand of the inner calcul
-    /// - Parameter right: right number
-    /// - Returns: the result or throw an error of type CalculationErrors
-    private func doCalculationForElements(left: Float, operand: Operator, right: Float) throws -> Float {
-        return try doCalcul(right: left, left: right, operand: operand)
-    }
-
-    /// Do a calcul on a and b depending on the operand
-    /// - Parameters:
-    ///   - right: number right of the calcul
-    ///   - left: number left of the calcul
-    ///   - operand: operand to use
-    /// - Returns: The result of the calcul or throw an error if divided by zero
-    private func doCalcul(right: Float, left: Float, operand: Operator) throws -> Float {
-        switch operand {
-        case .plus:
-            return right + left
-        case .minus:
-            return right - left
-        case .multiply:
-            return right * left
-        case .divide:
-            if left == 0 {
-                throw CalculationErrors.divideByZero
-            } else {
-                return  right / left
-            }
-        }
-    }
-
-    /// Cleanup and rebuild the numbers and operators for the calcul
-    /// - Parameter elements: array of elements in the text field
-    private func rebuildNumbersAndOperands() throws {
-        let elementsRefactored = try cleanElements(getElements())
-        reset()
-
-        for element in elementsRefactored {
-            if let operand = Operator.init(rawValue: element) {
-                addOperand(operand)
-            } else {
-                if let number = Float(element) {
-                    addNumber(number)
-                }
-            }
-            shortenCalculString.append("\(element) ")
-        }
-    }
-
+// MARK: - Gestion of elements
+extension CalculatorModel {
     /// Clean elements, will return the last calcul after = sign if chaining calculs,
     /// other will return the first calcul it founds
     /// - Parameter elements: the array of elements in the text
@@ -193,10 +114,10 @@ class CalculatorModel {
         for index in elements.indices {
             if let operand = Operator.init(rawValue: elements[index]) {
                 if operand.isPrioritary && index > 2 {
-                    if let right = Float(elements[index - 1]), let left = Float(elements[index + 1]) {
+                    if let left = Float(elements[index - 1]), let right = Float(elements[index + 1]) {
                         let priorityCalcul = try doCalcul(
-                            right: right,
                             left: left,
+                            right: right,
                             operand: operand
                         )
 
@@ -240,6 +161,8 @@ class CalculatorModel {
         return elements
     }
 
+    /// Clean and set current elements to work with from element array of string
+    /// - Parameter elements: array of elements to use
     private func setElements(_ elements: [String]) throws {
         reset()
         let elements = try cleanElements(elements)
@@ -251,6 +174,93 @@ class CalculatorModel {
                 self.addNumber(number)
             }
         }
+    }
+
+    /// Cleanup and rebuild the numbers and operators for the calcul
+    /// - Parameter elements: array of elements in the text field
+    private func rebuildNumbersAndOperands() throws {
+        let elementsRefactored = try cleanElements(getElements())
+        reset()
+
+        for element in elementsRefactored {
+            if let operand = Operator.init(rawValue: element) {
+                addOperand(operand)
+            } else {
+                if let number = Float(element) {
+                    addNumber(number)
+                }
+            }
+            shortenCalculString.append("\(element) ")
+        }
+    }
+}
+
+// MARK: - Do calcul functions
+extension CalculatorModel {
+    /// Execute the full calcul for an array of elements, it check the calculator build, and execute calcul loop
+    /// - Returns: The final result of the calcul
+    func doCalcul() throws {
+        try rebuildNumbersAndOperands()
+        dump(numbers)
+
+        var resultValue: Float = numbers.first!
+        numbers.remove(at: 0)
+
+        while !numbers.isEmpty && !operands.isEmpty {
+            for _ in operands {
+                resultValue = try doCalcul(
+                    left: resultValue,
+                    right: numbers[0],
+                    operand: operands[0]
+                )
+                numbers.remove(at: 0)
+                operands.remove(at: 0)
+            }
+        }
+
+        result = resultValue
+        numbers.append(resultValue)
+    }
+
+    /// Do calcul from elements
+    /// - Parameter elements: elements array to work with
+    func doCalcul(_ elements: [String]) throws {
+        try setElements(elements)
+        try doCalcul()
+    }
+
+    /// Do a calcul on a and b depending on the operand
+    /// - Parameters:
+    ///   - right: number right of the calcul
+    ///   - left: number left of the calcul
+    ///   - operand: operand to use
+    /// - Returns: The result of the calcul or throw an error if divided by zero
+    private func doCalcul(left: Float, right: Float, operand: Operator) throws -> Float {
+        switch operand {
+        case .plus:
+            return left + right
+        case .minus:
+            return left - right
+        case .multiply:
+            return left * right
+        case .divide:
+            if right == 0 {
+                throw CalculationErrors.divideByZero
+            } else {
+                return  left / right
+            }
+        }
+    }
+}
+
+// MARK: - Calculator get and reset
+extension CalculatorModel {
+    /// Shorten the text, get the priority calculs done and get more space to see the calcul
+    /// - Returns: The text of the calcul shortened
+    func getShortenText() -> String {
+        guard let result = result else { return "" }
+
+        return shortenCalculString + "= \(result)"
     }
 
     /// Reset the numbers and operands of the calculator

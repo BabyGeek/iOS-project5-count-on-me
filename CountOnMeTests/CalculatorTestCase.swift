@@ -9,15 +9,16 @@
 @testable import CountOnMe
 import XCTest
 
+// MARK: - Main class and setup
 class CalculatorTestCase: XCTestCase {
     var calculator: CalculatorModel!
 
     override func setUp() {
         super.setUp()
-
         calculator = CalculatorModel()
     }
 
+    // Tests done :
     // At begining operands, numbers, and text empty
     // At begining checks for calcul should be false
     // Addition 5 + 3 = 8
@@ -33,7 +34,10 @@ class CalculatorTestCase: XCTestCase {
     // 5 + 3 * 2 = 11 => check shortenText output = 5.0 + 6.0 = 11.0
     // Try 5 + 3 * 6 + 8 / 2 = 27 + 9 = 36 * 2 = 72 - 30 = 42 => check recusivity inside private funcs
     // Try 5 + 3 * 6 + 8 / 2 = 27 + 9 = 36 * 2 = 72 - 30 = 42  in text elements => check result is 42
+}
 
+// MARK: - Checks tests
+extension CalculatorTestCase {
     func testGivenCalculatorIsNew_WhenGettingOperandsAndNumbersAndShortenText_ThenAllShouldBeEmpty() {
         // When, Then
         XCTAssertTrue(calculator.operands.isEmpty)
@@ -50,6 +54,37 @@ class CalculatorTestCase: XCTestCase {
         XCTAssertTrue(!calculator.checkExpressionIsCorrect())
     }
 
+    func testGivenCalculatorIsFivePlusTree_WhenGettingCorrectCheck_ThenCorrectCheckShouldBeTrue() {
+        // Given
+        calculator.addNumber(5)
+        calculator.addOperand(.plus)
+        calculator.addNumber(3)
+
+        // When, Then
+        XCTAssertTrue(calculator.checkExpressionIsCorrect())
+    }
+
+    func testGivenCalculatorNumberIsFive_WhenCanAddOperandCheck_ThenCanAddOperandAndLastElementShouldBeTrueAndFalse() {
+        // Given
+        calculator.addNumber(5)
+
+        // When, Then
+        XCTAssertTrue(calculator.checkIfCanAddOperator())
+        XCTAssertTrue(!calculator.checkLastElement())
+    }
+
+    func testGivenCalculatorNumberIsFiveAndPlus_WhenCanAddOperandCheck_ThenCanAddOperandCheckShouldBeTrue() {
+        // Given
+        calculator.addNumber(5)
+        calculator.addOperand(.plus)
+
+        // When, Then
+        XCTAssertTrue(calculator.checkLastElement())
+    }
+}
+
+// MARK: - Simple calculs tests
+extension CalculatorTestCase {
     func testGivenCalculatorIsNew_WhenDoFivePlusTree_ThenResultShouldBeHeight() {
         // When
         calculator.addNumber(5)
@@ -116,7 +151,6 @@ class CalculatorTestCase: XCTestCase {
         calculator.addOperand(.divide)
         calculator.addNumber(2)
 
-
         do {
             try calculator.doCalcul()
         } catch {
@@ -130,7 +164,10 @@ class CalculatorTestCase: XCTestCase {
             XCTAssertTrue(false)
         }
     }
+}
 
+// MARK: - Complex calculs tests
+extension CalculatorTestCase {
     func testGivenCalculatorIsFivePlusTree_WhenDoCalculAndDevidedByTwo_ThenResultShouldBeFour() {
         // Given
         calculator.addNumber(5)
@@ -146,61 +183,16 @@ class CalculatorTestCase: XCTestCase {
         calculator.addOperand(.divide)
         calculator.addNumber(2)
 
-        
         do {
             try calculator.doCalcul()
         } catch {
             XCTAssertTrue(false)
         }
-        
+
         // Then
         if let result = calculator.result {
             XCTAssertEqual(result, 4)
         } else {
-            XCTAssertTrue(false)
-        }
-    }
-
-    func testGivenCalculatorIsFivePlusTree_WhenGettingCorrectCheck_ThenCorrectCheckShouldBeTrue() {
-        // Given
-        calculator.addNumber(5)
-        calculator.addOperand(.plus)
-        calculator.addNumber(3)
-
-        // When, Then
-        XCTAssertTrue(calculator.checkExpressionIsCorrect())
-    }
-
-    func testGivenCalculatorNumberIsFive_WhenCanAddOperandCheck_ThenCanAddOperandAndLastElementShouldBeTrueAndFalse() {
-        // Given
-        calculator.addNumber(5)
-
-        // When, Then
-        XCTAssertTrue(calculator.checkIfCanAddOperator())
-        XCTAssertTrue(!calculator.checkLastElement())
-    }
-
-    func testGivenCalculatorNumberIsFiveAndPlus_WhenCanAddOperandCheck_ThenCanAddOperandCheckShouldBeTrue() {
-        // Given
-        calculator.addNumber(5)
-        calculator.addOperand(.plus)
-
-        // When, Then
-        XCTAssertTrue(calculator.checkLastElement())
-    }
-
-    func testGivenCalculatorIsNew_WhenTryingToMakeDividedByZero_ThenShouldGetDivideByZeroError() {
-        // When
-        calculator.addNumber(5)
-        calculator.addOperand(.divide)
-        calculator.addNumber(0)
-
-        // Then
-        do {
-            try calculator.doCalcul()
-        } catch let error as CalculationErrors {
-            XCTAssertEqual(error, CalculationErrors.divideByZero)
-        } catch {
             XCTAssertTrue(false)
         }
     }
@@ -263,37 +255,6 @@ class CalculatorTestCase: XCTestCase {
         }
     }
 
-    func testGivenCalculatorIsMany_WhenCheckShorten_ThenShortenTextShouldBeEmpty() {
-        // Given
-        calculator.addNumber(5)
-        calculator.addOperand(.plus)
-        calculator.addNumber(3)
-        calculator.addOperand(.multiply)
-        calculator.addNumber(2)
-
-        // When, Then
-        XCTAssertEqual(calculator.getShortenText(), "")
-    }
-
-    func testGivenCalculatorIsMany_WhenDoCalcul_ThenShortenTextShouldBeShorten() {
-        // Given
-        calculator.addNumber(5)
-        calculator.addOperand(.plus)
-        calculator.addNumber(3)
-        calculator.addOperand(.multiply)
-        calculator.addNumber(2)
-
-        // When
-        do {
-            try calculator.doCalcul()
-        } catch {
-            XCTAssertTrue(false)
-        }
-
-        // Then
-        XCTAssertEqual(calculator.getShortenText(), "5.0 + 6.0 = 11.0")
-    }
-
     func testGivenCalculatorIsMany_WhenDoCalculPlusMany_ThenResultShouldBeFourtyTwo() {
         // Given
         calculator.addNumber(5)
@@ -348,12 +309,12 @@ class CalculatorTestCase: XCTestCase {
         }
     }
 
-    func testGivenCalculatorIsText_WhenDoCalculWithElement_ThenResultShouldBeFourtyTwo() {
+    func testGivenCalculIsText_WhenDoCalculWithElements_ThenResultShouldBeFourtyTwo() {
         // Given
-        let text = "5 + 3 * 6 + 8 / 2 = 27 + 9 = 36 * 2 = 72 - 30"
+        let calcul = "5 + 3 * 6 + 8 / 2 = 27 + 9 = 36 * 2 = 72 - 30"
 
         // When
-        let elements = text.split(separator: " ").map { "\($0)" }
+        let elements = calcul.split(separator: " ").map { "\($0)" }
         do {
             try calculator.doCalcul(elements)
         } catch {
@@ -364,6 +325,59 @@ class CalculatorTestCase: XCTestCase {
         if let result = calculator.result {
             XCTAssertEqual(result, 42)
         } else {
+            XCTAssertTrue(false)
+        }
+    }
+}
+
+// MARK: - shortenText output tests
+extension CalculatorTestCase {
+    func testGivenCalculatorIsMany_WhenCheckShorten_ThenShortenTextShouldBeEmpty() {
+        // Given
+        calculator.addNumber(5)
+        calculator.addOperand(.plus)
+        calculator.addNumber(3)
+        calculator.addOperand(.multiply)
+        calculator.addNumber(2)
+
+        // When, Then
+        XCTAssertEqual(calculator.getShortenText(), "")
+    }
+
+    func testGivenCalculatorIsMany_WhenDoCalcul_ThenShortenTextShouldBeShorten() {
+        // Given
+        calculator.addNumber(5)
+        calculator.addOperand(.plus)
+        calculator.addNumber(3)
+        calculator.addOperand(.multiply)
+        calculator.addNumber(2)
+
+        // When
+        do {
+            try calculator.doCalcul()
+        } catch {
+            XCTAssertTrue(false)
+        }
+
+        // Then
+        XCTAssertEqual(calculator.getShortenText(), "5.0 + 6.0 = 11.0")
+    }
+}
+
+// MARK: - Errors tests
+extension CalculatorTestCase {
+    func testGivenCalculatorIsNew_WhenTryingToMakeDividedByZero_ThenShouldGetDivideByZeroError() {
+        // When
+        calculator.addNumber(5)
+        calculator.addOperand(.divide)
+        calculator.addNumber(0)
+
+        // Then
+        do {
+            try calculator.doCalcul()
+        } catch let error as CalculationErrors {
+            XCTAssertEqual(error, CalculationErrors.divideByZero)
+        } catch {
             XCTAssertTrue(false)
         }
     }
